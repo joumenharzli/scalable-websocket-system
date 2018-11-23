@@ -1,0 +1,11 @@
+sudo: required
+dist: trusty
+
+matrix:
+  include:
+  - language: scala
+    jdk: oraclejdk8
+    script:
+    - sbt compile
+    before_script:
+    - cd ./notifications-dispatcher/
