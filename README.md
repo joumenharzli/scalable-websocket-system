@@ -1,4 +1,5 @@
 # Scalable WebSocket System
+[![Build Status](https://travis-ci.org/joumenharzli/scalable-websocket-system.svg?branch=master)](https://travis-ci.org/joumenharzli/scalable-websocket-system)
 
 ## Overview
 * An example for scalable web socket system using Scala, Akka, Akka Http, Kafka, Cassandra, WebSocket
