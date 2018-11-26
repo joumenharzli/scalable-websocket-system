@@ -1,4 +1,5 @@
-import akka.actor.{ActorSystem, Terminated}
+import actor.EventsConsumerActor
+import akka.actor.{ActorRef, ActorSystem, Terminated}
 import akka.event.slf4j.Logger
 import akka.stream.ActorMaterializer
 import server.WebServer
@@ -21,15 +22,6 @@ object Application extends App {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-  /**
-    * Stop server and Actor System
-    */
-  def stopWebServerAndActorSystem(): Future[Terminated] = {
-    WebServer
-      .stop()
-      .flatMap(_ => system.terminate())
-  }
-
   WebServer
     .start()
     .onComplete {
@@ -47,5 +39,23 @@ object Application extends App {
       override def run(): Unit =
         Await.result(stopWebServerAndActorSystem(), 10.seconds)
     })
+
+  /**
+    * Start the kafka consumer and subscribe to topic
+    *
+    * @return a reference to the consumer actor
+    */
+  def startEventsConsumer(): ActorRef = {
+    system.actorOf(EventsConsumerActor.props())
+  }
+
+  /**
+    * Stop server and Actor System
+    */
+  def stopWebServerAndActorSystem(): Future[Terminated] = {
+    WebServer
+      .stop()
+      .flatMap(_ => system.terminate())
+  }
 
 }
