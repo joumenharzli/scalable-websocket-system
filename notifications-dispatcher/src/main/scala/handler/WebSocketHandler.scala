@@ -1,20 +1,5 @@
 package handler
 
-import java.util.concurrent.TimeUnit
-
-import actor.{ClientConnected, ClientDisconnected, WebSocketActor}
-import akka.NotUsed
-import akka.actor.{ActorRef, ActorSystem}
-import akka.event.slf4j.Logger
-import akka.http.scaladsl.model.ws.Message
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Flow, Sink, Source}
-import akka.util.Timeout
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.FiniteDuration
-import scala.util.{Failure, Success}
-
 /**
   * A handler for web sockets that creates an actor when the client connects and kill it when it disconnects
   *
@@ -29,15 +14,15 @@ object WebSocketHandler {
     logger.debug(s"Request to create connection for the user $userId")
 
     // Create an actor for every WebSocket connection, this will represent the contact point to reach the user
-    val wsUser: ActorRef = system.actorOf(WebSocketActor.props())
+    val wsUser: ActorRef = system.actorOf(SessionActor.props())
 
     val sink = Flow[Message]
-      .to(Sink.actorRef(wsUser, ClientDisconnected))
+      .to(Sink.actorRef(wsUser, CloseSession))
 
     val source = Source
       .actorRef(bufferSize = 10, overflowStrategy = OverflowStrategy.dropBuffer)
       .mapMaterializedValue { wsHandle =>
-        wsUser ! ClientConnected(wsHandle, userId)
+        wsUser ! CreateSession(wsHandle, userId)
         NotUsed
       }
 
@@ -45,14 +30,4 @@ object WebSocketHandler {
 
   }
 
-  def getUser(userId: String)(implicit system: ActorSystem, executor: ExecutionContext) = {
-
-    implicit val timeout: Timeout = Timeout(FiniteDuration(1, TimeUnit.SECONDS))
-
-    system.actorSelection("user/" + userId).resolveOne().onComplete {
-      case Success(actorRef) => actorRef
-      case Failure(ex) => system.actorOf(UserActor.props(userId))
-    }
-
-  }
 }

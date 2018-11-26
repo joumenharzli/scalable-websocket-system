@@ -1,9 +1,5 @@
 package server
 
-import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, parameters, path, _}
-import akka.http.scaladsl.server.Route
-import handler.WebSocketHandler
-
 /**
   * Web Server Routes
   *
@@ -11,7 +7,7 @@ import handler.WebSocketHandler
   */
 object Routes {
 
-  def routes: Route =
+  def routes(implicit system: ActorSystem): Route =
     path("ws") {
       parameters('id.as[String]) {
         id => {
