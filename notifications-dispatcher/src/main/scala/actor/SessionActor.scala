@@ -1,5 +1,9 @@
 package actor
 
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.http.scaladsl.model.ws.TextMessage
+import akka.stream.scaladsl.Source
+
 
 object SessionActor {
   def props(): Props = Props(new SessionActor())

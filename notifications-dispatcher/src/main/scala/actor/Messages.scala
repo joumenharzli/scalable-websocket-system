@@ -1,5 +1,8 @@
 package actor
 
+import akka.actor.ActorRef
+import model.Notification
+
 /**
   * Message sent when a new client connects
   *
