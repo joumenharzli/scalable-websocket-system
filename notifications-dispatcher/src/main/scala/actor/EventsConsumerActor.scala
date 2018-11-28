@@ -5,6 +5,7 @@ import cakesolutions.kafka.KafkaConsumer
 import cakesolutions.kafka.akka.KafkaConsumerActor.{Confirm, Subscribe}
 import cakesolutions.kafka.akka.{ConsumerRecords, KafkaConsumerActor}
 import com.typesafe.config.{Config, ConfigFactory}
+import model.Notification
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.StringDeserializer
 
@@ -50,7 +51,15 @@ class EventsConsumerActor extends Actor with ActorLogging {
 
   private def processRecords(records: ConsumerRecords[String, String]): Unit = {
 
-    records.pairs.foreach { case (a, b) => log.info("## {} {} ", a, b) }
+    records.pairs.map { case (_, data) => data }
+      .foreach(data => {
+        val strings = data.split("#")
+        val userId = strings(0)
+        val notificationId = strings(1)
+        val notificationContent = strings(2)
+        context.actorSelection("../*") ! SendToClient(Notification(notificationId, notificationContent), userId)
+      })
+
     sender() ! Confirm(records.offsets, commit = true)
 
   }

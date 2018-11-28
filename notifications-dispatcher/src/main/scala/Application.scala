@@ -27,6 +27,7 @@ object Application extends App {
     .onComplete {
       case Success(serverBinding) =>
         logger.info("listening to: {}", serverBinding.localAddress)
+        startEventsConsumer()
       case Failure(ex) =>
         logger.error(
           s"Failed to start server, shutting down actor system. Exception is: ${ex.getCause}: ${ex.getMessage}")

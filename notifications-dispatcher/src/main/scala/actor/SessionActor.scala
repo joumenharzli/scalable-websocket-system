@@ -30,8 +30,9 @@ class SessionActor extends Actor with ActorLogging {
 
       client match {
         case Some((ref, userId)) if id == userId =>
-          ref ! TextMessage(Source.single(""))
+          ref ! TextMessage(Source.single(s"Hey => ${notification.content}"))
           log.debug(s"Notification $notification sent to user $userId")
+        case _ => // ignore
       }
 
     case CloseSession =>
