@@ -30,7 +30,7 @@ object Application extends App {
         startEventsConsumer()
       case Failure(ex) =>
         logger.error(
-          s"Failed to start server, shutting down actor system. Exception is: ${ex.getCause}: ${ex.getMessage}")
+          "Failed to start server, shutting down actor system. Exception is: {}", ex)
         system.terminate()
     }
 

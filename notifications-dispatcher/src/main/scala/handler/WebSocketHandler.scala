@@ -19,14 +19,16 @@ object WebSocketHandler {
 
   def handle(userId: String)(implicit system: ActorSystem): Flow[Message, Message, NotUsed] = {
 
-    logger.debug(s"Request to create connection for the user $userId")
+    logger.debug("Request to create connection for the user {}", userId)
 
-    // Create an actor for every WebSocket connection, this will represent the contact point to reach the user
+    // Create an actor for every WebSocket connection
     val wsUser: ActorRef = system.actorOf(SessionActor.props())
 
-    val sink = Flow[Message]
-      .to(Sink.actorRef(wsUser, CloseSession))
+    // Sends the elements of the stream to the created actor and when the stream is completed send him a CloseSession message
+    val sink = Sink.actorRef(wsUser, CloseSession)
 
+    // The source is represented as an Actor and send the created referee to wsUser.
+    // This source is the way to send messages to the client
     val source = Source
       .actorRef(bufferSize = 10, overflowStrategy = OverflowStrategy.dropBuffer)
       .mapMaterializedValue { wsHandle =>

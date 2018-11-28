@@ -41,7 +41,7 @@ class EventsConsumerActor extends Actor with ActorLogging {
   private def createConsumerAndSubscribeToTopic(): Unit = {
 
     log.debug(
-      s"Request to create consumer and subscribe to topic $topic in kafka $servers with group id $groupId")
+      "Request to create consumer and subscribe to topic {} in kafka {} with group id {}", topic, servers, groupId)
 
     val conf = consumerConfiguration()
     val consumer = buildConsumer(conf)
