@@ -1,5 +1,7 @@
 package event
 
+import spray.json.{DefaultJsonProtocol, RootJsonFormat}
+
 /**
   * A model for representing the notification
   *
@@ -8,3 +10,10 @@ package event
   * @param userId  id of the user
   */
 case class SendNotificationEvent(id: String, content: String, userId: String)
+
+/**
+  * Support reading and writing json
+  */
+object SendNotificationEventJsonSupport extends DefaultJsonProtocol {
+  implicit val sendNotificationEventFormat: RootJsonFormat[SendNotificationEvent] = jsonFormat3(SendNotificationEvent)
+}

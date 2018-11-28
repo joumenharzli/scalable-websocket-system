@@ -5,9 +5,12 @@ import cakesolutions.kafka.KafkaConsumer
 import cakesolutions.kafka.akka.KafkaConsumerActor.{Confirm, Subscribe}
 import cakesolutions.kafka.akka.{ConsumerRecords, KafkaConsumerActor}
 import com.typesafe.config.{Config, ConfigFactory}
+import event.SendNotificationEvent
+import event.SendNotificationEventJsonSupport._
 import model.Notification
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.StringDeserializer
+import spray.json._
 
 import scala.collection.mutable
 import scala.concurrent.duration._
@@ -102,14 +105,15 @@ class EventsConsumerActor extends Actor with ActorLogging {
     records.pairs.map { case (_, data) => data }
       .foreach(data => {
 
-        val strings = data.split("#")
-        val userId = strings(0)
-        val notificationId = strings(1)
-        val notificationContent = strings(2)
+        val event = data.parseJson.convertTo[SendNotificationEvent]
+        val userId = event.userId
+        val notification = Notification(event.id, event.content)
 
         registry.get(userId) match {
           case Some(list) =>
-            list.foreach(actor => actor ! SendToClient(Notification(notificationId, notificationContent), userId))
+            list.foreach(actor => {
+              actor ! SendToClient(notification, userId)
+            })
           case None => // ignore
         }
 

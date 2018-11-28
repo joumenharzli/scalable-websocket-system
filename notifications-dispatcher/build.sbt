@@ -15,6 +15,7 @@ val kafkaClient = "2.0.0"
 val scalaTest = "3.0.5"
 val slf4j = "1.7.25"
 val logback = "1.2.3"
+val spray = "1.3.5"
 
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 
@@ -29,6 +30,8 @@ libraryDependencies ++= Seq(
 
   "net.cakesolutions" %% "scala-kafka-client" % kafkaClient,
   "net.cakesolutions" %% "scala-kafka-client-akka" % kafkaClient exclude("com.typesafe.akka", "akka-actor"),
+
+  "io.spray" %% "spray-json" % spray,
 
   "org.slf4j" % "slf4j-api" % slf4j,
   "ch.qos.logback" % "logback-classic" % logback,

@@ -3,6 +3,8 @@ package actor
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.http.scaladsl.model.ws.TextMessage
 import akka.stream.scaladsl.Source
+import model.NotificationJsonSupport._
+import spray.json._
 
 
 object SessionActor {
@@ -31,7 +33,7 @@ class SessionActor(val eventsConsumer: ActorRef) extends Actor with ActorLogging
 
       client match {
         case Some((ref, userId)) if id == userId =>
-          ref ! TextMessage(Source.single(s"Hey => ${notification.content}"))
+          ref ! TextMessage(Source.single(notification.toJson.toString()))
           log.debug("Notification {} sent to user {}", notification, userId)
         case Some((ref, userId)) if id != userId =>
           // This should never happen
