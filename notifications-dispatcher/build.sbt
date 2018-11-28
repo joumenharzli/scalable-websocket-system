@@ -1,3 +1,5 @@
+
+
 organization := "io.github.joumenharzli"
 name := "notifications-dispatcher"
 version := "0.1.0-SNAPSHOT"
@@ -37,3 +39,11 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % scalaTest % Test
 
 )
+
+// Assembly config
+lazy val app = (project in file(".")).
+  settings(
+    assemblyJarName in assembly := "notifications-dispatcher.jar",
+    mainClass in assembly := Some("Application"),
+    test in assembly := {}
+  )
