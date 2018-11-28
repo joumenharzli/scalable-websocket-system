@@ -21,13 +21,13 @@ object Application extends App {
   implicit val system: ActorSystem = ActorSystem("notification-dispatcher")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+  implicit val eventsConsumer: ActorRef = startEventsConsumer()
 
   WebServer
     .start()
     .onComplete {
       case Success(serverBinding) =>
         logger.info("listening to: {}", serverBinding.localAddress)
-        startEventsConsumer()
       case Failure(ex) =>
         logger.error(
           "Failed to start server, shutting down actor system. Exception is: {}", ex)

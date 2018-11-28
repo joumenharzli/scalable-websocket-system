@@ -17,12 +17,12 @@ object WebSocketHandler {
 
   val logger = Logger(this.getClass.getName)
 
-  def handle(userId: String)(implicit system: ActorSystem): Flow[Message, Message, NotUsed] = {
+  def handle(userId: String)(implicit system: ActorSystem, eventsConsumer: ActorRef): Flow[Message, Message, NotUsed] = {
 
     logger.debug("Request to create connection for the user {}", userId)
 
     // Create an actor for every WebSocket connection
-    val wsUser: ActorRef = system.actorOf(SessionActor.props())
+    val wsUser: ActorRef = system.actorOf(SessionActor.props(eventsConsumer))
 
     // Sends the elements of the stream to the created actor and when the stream is completed send him a CloseSession message
     val sink = Sink.actorRef(wsUser, CloseSession)

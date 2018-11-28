@@ -24,3 +24,19 @@ case class CloseSession()
   */
 case class SendToClient(notification: Notification, userId: String)
 
+/**
+  * Message sent when a session is created
+  *
+  * @param actorRef a reference for the session
+  * @param userId   id of the user
+  */
+case class SessionCreated(actorRef: ActorRef, userId: String)
+
+/**
+  *
+  * Message sent when a session is closed
+  *
+  * @param actorRef a reference for the session
+  * @param userId   id of the user
+  */
+case class SessionClosed(actorRef: ActorRef, userId: String)

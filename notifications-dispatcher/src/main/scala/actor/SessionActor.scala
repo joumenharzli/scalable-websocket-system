@@ -6,7 +6,7 @@ import akka.stream.scaladsl.Source
 
 
 object SessionActor {
-  def props(): Props = Props(new SessionActor())
+  def props(eventsConsumer: ActorRef): Props = Props(new SessionActor(eventsConsumer))
 }
 
 /**
@@ -15,15 +15,16 @@ object SessionActor {
   *
   * @author jaharzli
   */
-class SessionActor extends Actor with ActorLogging {
+class SessionActor(val eventsConsumer: ActorRef) extends Actor with ActorLogging {
 
   private var client: Option[(ActorRef, String)] = None
 
   override def receive: Receive = {
 
     case CreateSession(ref, id) =>
-      log.info("New client connected associated to the user ", id)
+      log.info("New client connected associated to the user {}", id)
       client = Some(ref, id)
+      eventsConsumer ! SessionCreated(self, id)
 
     case SendToClient(notification, id) =>
       log.debug("Request to send notification {} to user {}", notification, id)
@@ -32,13 +33,18 @@ class SessionActor extends Actor with ActorLogging {
         case Some((ref, userId)) if id == userId =>
           ref ! TextMessage(Source.single(s"Hey => ${notification.content}"))
           log.debug("Notification {} sent to user {}", notification, userId)
+        case Some((ref, userId)) if id != userId =>
+          // This should never happen
+          log.warning("Notification {} is not allowed to be sent to user {}", notification, userId)
         case _ => // ignore
       }
 
     case CloseSession =>
 
       client match {
-        case Some((ref, userId)) => log.info("Client for the user {} disconnected", userId)
+        case Some((ref, userId)) =>
+          log.info("Client for the user {} disconnected", userId)
+          eventsConsumer ! SessionClosed(self, userId)
         case None => log.info("No client is associated to this actor")
       }
 

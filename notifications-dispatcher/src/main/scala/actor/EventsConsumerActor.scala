@@ -9,6 +9,7 @@ import model.Notification
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.StringDeserializer
 
+import scala.collection.mutable
 import scala.concurrent.duration._
 
 object EventsConsumerActor {
@@ -30,14 +31,20 @@ class EventsConsumerActor extends Actor with ActorLogging {
   private val scheduleInterval = 1.seconds
   private val maxRedeliveries = 3.seconds
 
+  private val registry: mutable.Map[String, List[ActorRef]] = mutable.Map()
   private val recordsExtractor = ConsumerRecords.extractor[String, String]
 
   createConsumerAndSubscribeToTopic()
 
   override def receive: Receive = {
+    case SessionCreated(actor, userId) => addUserSession(actor, userId)
+    case SessionClosed(actor, userId) => removeUserSession(actor, userId)
     case recordsExtractor(records) => processRecords(records)
   }
 
+  /**
+    * Create the kafka consumer and subscribe to the provided topic
+    */
   private def createConsumerAndSubscribeToTopic(): Unit = {
 
     log.debug(
@@ -49,21 +56,72 @@ class EventsConsumerActor extends Actor with ActorLogging {
 
   }
 
+  /**
+    * Add user session to registry
+    *
+    * @param actor  reference if the actor
+    * @param userId id of the user
+    */
+  private def addUserSession(actor: ActorRef, userId: String): Unit = {
+
+    val actors: List[ActorRef] = registry.get(userId) match {
+      case Some(list) => list
+      case None =>
+        // init list
+        val list = List()
+        registry += (userId -> list)
+        list
+    }
+
+    registry.update(userId, actor :: actors)
+
+  }
+
+  /**
+    * Remove user session from registry
+    *
+    * @param actor  reference if the actor
+    * @param userId id of the user
+    */
+  private def removeUserSession(actor: ActorRef, userId: String): Unit = {
+
+    registry.get(userId) match {
+      case Some(list) => registry.update(userId, list.filter(el => el != actor))
+      case None => // ignore
+    }
+
+  }
+
+  /**
+    * Process received records
+    *
+    * @param records records
+    */
   private def processRecords(records: ConsumerRecords[String, String]): Unit = {
 
     records.pairs.map { case (_, data) => data }
       .foreach(data => {
+
         val strings = data.split("#")
         val userId = strings(0)
         val notificationId = strings(1)
         val notificationContent = strings(2)
-        context.actorSelection("../*") ! SendToClient(Notification(notificationId, notificationContent), userId)
+
+        registry.get(userId) match {
+          case Some(list) =>
+            list.foreach(actor => actor ! SendToClient(Notification(notificationId, notificationContent), userId))
+          case None => // ignore
+        }
+
       })
 
     sender() ! Confirm(records.offsets, commit = true)
 
   }
 
+  /**
+    * @return the configuration of the consumer
+    */
   private def consumerConfiguration(): KafkaConsumer.Conf[String, String] = {
 
     KafkaConsumer.Conf(
@@ -77,6 +135,12 @@ class EventsConsumerActor extends Actor with ActorLogging {
 
   }
 
+  /**
+    * Build a kafka consumer
+    *
+    * @param consumerConfig config of the conumer
+    * @return reference to the consumer
+    */
   private def buildConsumer(consumerConfig: KafkaConsumer.Conf[String, String]): ActorRef = {
 
     val actorConfig = KafkaConsumerActor.Conf(scheduleInterval, maxRedeliveries)

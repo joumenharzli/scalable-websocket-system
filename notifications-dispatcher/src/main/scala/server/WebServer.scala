@@ -1,7 +1,7 @@
 package server
 
 import akka.Done
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
@@ -28,7 +28,8 @@ object WebServer {
     * @return a future to the server
     */
   def start()(implicit system: ActorSystem,
-              materializer: ActorMaterializer): Future[Http.ServerBinding] = {
+              materializer: ActorMaterializer,
+              eventsConsumer: ActorRef): Future[Http.ServerBinding] = {
 
     val httpHandle = Http().bindAndHandle(routes, interface, port)
     instance = httpHandle
