@@ -22,21 +22,8 @@ services:
     hostname: dispatcher-1
     container_name: dispatcher-1
     environment:
-      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_SERVERS=kafka:9092
       - KAFKA_GROUP_ID=dispatcher-1
-      - KAFKA_TOPIC=notifications
-    depends_on:
-      - kafka
-    networks:
-      - app
-
-  dispatcher-2:
-    image: joumenharzli/notifications-dispatcher:latest
-    hostname: dispatcher-2
-    container_name: dispatcher-2
-    environment:
-      - KAFKA_SERVERS=kafka:29092
-      - KAFKA_GROUP_ID=dispatcher-2
       - KAFKA_TOPIC=notifications
     depends_on:
       - kafka
@@ -52,29 +39,32 @@ services:
       - 443:443
     depends_on:
       - dispatcher-1
-      - dispatcher-2
     networks:
       - app
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.0.1
     hostname: zookeeper
     container_name: zookeeper
     environment:
-      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     networks:
       - app
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.0.1
     hostname: kafka
     container_name: kafka
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - 29092:29092
     depends_on:
       - zookeeper
     networks:
