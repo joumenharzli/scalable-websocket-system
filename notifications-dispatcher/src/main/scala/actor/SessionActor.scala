@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Joumen Ali HARZLI
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package actor
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
@@ -6,17 +23,17 @@ import akka.stream.scaladsl.Source
 import model.NotificationJsonSupport._
 import spray.json._
 
-
 object SessionActor {
-  def props(eventsConsumer: ActorRef): Props = Props(new SessionActor(eventsConsumer))
+  def props(eventsConsumer: ActorRef): Props =
+    Props(new SessionActor(eventsConsumer))
 }
 
 /**
-  * This actor is created when a web socket connection is started it.
-  * When a message [[SendToClient]] is received it checks if the client is concerned then it send it a notification
-  *
-  * @author jaharzli
-  */
+ * This actor is created when a web socket connection is started it.
+ * When a message [[SendToClient]] is received it checks if the client is concerned then it send it a notification
+ *
+ * @author jaharzli
+ */
 class SessionActor(val eventsConsumer: ActorRef) extends Actor with ActorLogging {
 
   private var client: Option[(ActorRef, String)] = None
@@ -42,7 +59,6 @@ class SessionActor(val eventsConsumer: ActorRef) extends Actor with ActorLogging
       }
 
     case CloseSession =>
-
       client match {
         case Some((ref, userId)) =>
           log.info("Client for the user {} disconnected", userId)

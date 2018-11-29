@@ -15,28 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package server
-
-import akka.actor.{ActorRef, ActorSystem}
-import akka.http.scaladsl.server.Directives.{handleWebSocketMessages, parameters, path, _}
-import akka.http.scaladsl.server.Route
-import handler.WebSocketHandler
-
-/**
- * Web Server Routes
- *
- * @author jaharzli
- */
-object Routes {
-
-  def routes(implicit system: ActorSystem, eventsConsumer: ActorRef): Route =
-    path("ws") {
-      parameters('id.as[String]) { id =>
-        {
-          handleWebSocketMessages(WebSocketHandler.handle(id))
-        }
-      }
-
-    }
-
-}
+addSbtPlugin("com.typesafe.sbt"  % "sbt-native-packager" % "1.3.14")
+addSbtPlugin("com.geirsson"      % "sbt-scalafmt"        % "1.5.1")
+addSbtPlugin("de.heikoseeberger" % "sbt-header"          % "5.0.0")

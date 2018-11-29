@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2018  Joumen Ali HARZLI
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package handler
 
 import actor._
@@ -9,15 +26,16 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Flow, Sink, Source}
 
 /**
-  * A handler for web sockets that creates an actor when the client connects and kill it when it disconnects
-  *
-  * @author jaharzli
-  */
+ * A handler for web sockets that creates an actor when the client connects and kill it when it disconnects
+ *
+ * @author jaharzli
+ */
 object WebSocketHandler {
 
   val logger = Logger(this.getClass.getName)
 
-  def handle(userId: String)(implicit system: ActorSystem, eventsConsumer: ActorRef): Flow[Message, Message, NotUsed] = {
+  def handle(userId: String)(implicit system: ActorSystem,
+                             eventsConsumer: ActorRef): Flow[Message, Message, NotUsed] = {
 
     logger.debug("Request to create connection for the user {}", userId)
 
