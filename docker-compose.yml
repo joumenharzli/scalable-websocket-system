@@ -1,0 +1,85 @@
+#
+# Copyright (C) 2018  Joumen Ali HARZLI
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+version: "3"
+services:
+  dispatcher-1:
+    image: joumenharzli/notifications-dispatcher:latest
+    hostname: dispatcher-1
+    container_name: dispatcher-1
+    environment:
+      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_GROUP-ID=dispatcher-1
+      - KAFKA_TOPIC=notifications
+    depends_on:
+      - kafka
+    networks:
+      - app
+
+  dispatcher-2:
+    image: joumenharzli/notifications-dispatcher:latest
+    hostname: dispatcher-2
+    container_name: dispatcher-2
+    environment:
+      - KAFKA_SERVERS=kafka:29092
+      - KAFKA_GROUP-ID=dispatcher-2
+      - KAFKA_TOPIC=notifications
+    depends_on:
+      - kafka
+    networks:
+      - app
+
+  nginx:
+    build: nginx
+    image: joumenharzli/nginx:latest
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - dispatcher-1
+      - dispatcher-2
+    networks:
+      - app
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - app
+
+networks:
+  app:
+    driver: "bridge"
