@@ -23,7 +23,7 @@ services:
     container_name: dispatcher-1
     environment:
       - KAFKA_SERVERS=kafka:29092
-      - KAFKA_GROUP-ID=dispatcher-1
+      - KAFKA_GROUP_ID=dispatcher-1
       - KAFKA_TOPIC=notifications
     depends_on:
       - kafka
@@ -36,7 +36,7 @@ services:
     container_name: dispatcher-2
     environment:
       - KAFKA_SERVERS=kafka:29092
-      - KAFKA_GROUP-ID=dispatcher-2
+      - KAFKA_GROUP_ID=dispatcher-2
       - KAFKA_TOPIC=notifications
     depends_on:
       - kafka
