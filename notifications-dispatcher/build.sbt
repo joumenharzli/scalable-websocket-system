@@ -1,4 +1,4 @@
-
+import com.typesafe.sbt.packager.docker.Cmd
 
 /*
  * Copyright (C) 2018  Joumen Ali HARZLI
@@ -75,8 +75,7 @@ defaultLinuxInstallLocation in Docker := dockerAppPath
 dockerBaseImage := "openjdk:" + jreVersion + "-jre-alpine"
 packageName in Docker := "joumenharzli/" + packageName.value
 dockerUpdateLatest := true
-maintainer in Docker := "Joumen Ali HARZLI"
-dockerLabels := Map("maintainer" -> "Joumen Ali HARZLI")
+dockerLabels := Map("maintainer" -> organizationName.value)
 dockerEnvVars := Map("APP_DIR"   -> dockerAppPath)
 dockerExposedPorts := Seq(8080)
 dockerExposedVolumes := Seq(logsPath)
