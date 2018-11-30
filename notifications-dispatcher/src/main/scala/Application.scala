@@ -15,11 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import Application.system
 import actor.EventsConsumerActor
-import akka.actor.{ActorRef, ActorSystem, Terminated}
+import akka.actor.{ActorRef, ActorSystem, Props, Terminated}
 import akka.event.slf4j.Logger
 import akka.stream.ActorMaterializer
+import cakesolutions.kafka.{KafkaConsumer, KafkaProducer}
+import cakesolutions.kafka.akka.{KafkaConsumerActor, KafkaProducerActor, ProducerRecords}
+import event.SendNotificationEvent
+import org.apache.kafka.clients.consumer.OffsetResetStrategy
+import org.apache.kafka.common.serialization.{StringDeserializer, StringSerializer}
 import server.WebServer
+
+import event.SendNotificationEvent
+import event.SendNotificationEventJsonSupport._
+import spray.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
@@ -71,5 +81,29 @@ object Application extends App {
     WebServer
       .stop()
       .flatMap(_ => system.terminate())
+
+}
+
+
+object ProducerKafka extends App {
+
+  implicit val system: ActorSystem                        = ActorSystem("notification-dispatcher")
+  implicit val materializer: ActorMaterializer            = ActorMaterializer()
+
+  private val kafka: ActorRef = system.actorOf(
+    KafkaProducerActor.props(KafkaProducer.Conf(Map("bootstrap.servers" -> "localhost:29092"),
+    new StringSerializer, new StringSerializer)))
+
+  (0 to 2000)
+      .foreach(i=>{
+        kafka ! ProducerRecords.fromKeyValues[String, String]("notifications",
+          keyValues = Seq((Some("notifications"), SendNotificationEvent("1",s"message => $i","3").toJson.toString())),
+          successResponse = Some("success"),
+          failureResponse = Some("failure"))
+      })
+
+
+
+
 
 }

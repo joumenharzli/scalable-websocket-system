@@ -27,6 +27,8 @@ import event.SendNotificationEventJsonSupport._
 import model.Notification
 import org.apache.kafka.clients.consumer.OffsetResetStrategy
 import org.apache.kafka.common.serialization.StringDeserializer
+import event.SendNotificationEvent
+import event.SendNotificationEventJsonSupport._
 import spray.json._
 
 import scala.collection.mutable

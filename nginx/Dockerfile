@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FROM nginx:latest
+FROM nginx:1.15-alpine
 LABEL maintainer="Joumen Ali HARZLI"
 
 COPY nginx.conf /etc/nginx/nginx.conf
