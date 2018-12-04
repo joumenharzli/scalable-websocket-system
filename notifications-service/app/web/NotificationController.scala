@@ -42,7 +42,7 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
     {
       val payload = request.body.as[NotificationToAddDto]
       service.insert(payload) match {
-        case Valid(future)   => Future.successful(Ok(future.map(_.toJson)))
+        case Valid(future)   => future.map(_.toJson).map(Ok(_))
         case Invalid(errors) => Future.successful(BadRequest(errors.toList.toJson))
       }
     }
@@ -59,7 +59,7 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
 
   def findByUserId(userId: String, paging: Option[String]): Action[AnyContent] = Action.async(
     service.findByUserId(userId, paging) match {
-      case Valid(future)   => Future.successful(Ok(future.map(_.toJson)))
+      case Valid(future)   => future.map(_.toJson).map(Ok(_))
       case Invalid(errors) => Future.successful(BadRequest(errors.toList.toJson))
     }
   )
