@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (C) 2018  Joumen Ali HARZLI
  *
@@ -33,6 +31,7 @@ val slf4j         = "1.7.25"
 val phantom       = "2.29.0"
 val macroParadise = "2.1.0"
 val playTestPlus  = "3.1.2"
+val cats          = "1.5.0"
 
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
@@ -43,6 +42,7 @@ libraryDependencies ++= Seq(
   "net.cakesolutions" %% "scala-kafka-client"      % kafkaClient,
   "net.cakesolutions" %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
   "org.slf4j"         % "slf4j-api"                % slf4j,
+  "org.typelevel"     %% "cats-core"               % cats,
   /* Test dependencies  */
   "org.scalatestplus.play" %% "scalatestplus-play"         % playTestPlus % Test,
   "net.cakesolutions"      %% "scala-kafka-client-testkit" % kafkaClient  % Test

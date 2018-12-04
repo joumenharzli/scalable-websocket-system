@@ -25,6 +25,7 @@ import com.outworkers.phantom.dsl._
 import com.typesafe.config.Config
 import domain.Notification
 import javax.inject.{Inject, Singleton}
+import org.joda.time.DateTime
 import repository.support.Page
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -72,7 +73,7 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
       .value(_.content, notification.content)
       .value(_.seen, false)
       .value(_.userId, notification.userId)
-      .value(_.createdAt, notification.createdAt)
+      .value(_.createdAt, DateTime.now())
       .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
       .future()
       .map(_ => notification.copy(id = generatedId))
