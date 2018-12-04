@@ -16,14 +16,17 @@
  */
 
 package service
+
 import java.util.UUID
 
+import cats.data.{NonEmptyChain, Validated}
 import com.datastax.driver.core.PagingState
 import domain.Notification
 import repository.support.Page
-import service.dto.{NotificationToAddDto, UserNotificationDto}
+import service.dto.NotificationToAddDto
 
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
  * A service for managing [[Notification]]
@@ -33,26 +36,27 @@ import scala.concurrent.Future
 trait NotificationService {
 
   /**
-   *  Insert a new notification
+   * Insert a new notification
    *
    * @param notification entity to insert
    * @return the inserted entity
    */
-  def insert(notification: NotificationToAddDto): Future[UserNotificationDto]
+  def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[Notification]]
 
   /**
    * Update notification property seen to true
    *
    * @param id id of the notification
    */
-  def updateToSeen(id: UUID): Future[Unit]
+  def updateToSeen(id: UUID): Validated[NonEmptyChain[String], Try[Future[Unit]]]
 
   /**
-   *  Find notifications by user id
+   * Find notifications by user id
    *
-   * @param userId id of the user
+   * @param userId      id of the user
    * @param pagingState state of the pagination this is blank for the first page
    * @return the found notifications and the next paging state
    */
-  def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[UserNotificationDto]]]
+  def findByUserId(userId: UUID,
+                   pagingState: Option[PagingState]): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]]
 }

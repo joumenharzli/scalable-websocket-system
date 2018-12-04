@@ -36,13 +36,18 @@ val cats          = "1.5.0"
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
 
+val commonsCollections = "4.2"
+val commonsLang        = "3.8.1"
+
 libraryDependencies ++= Seq(
   guice,
-  "com.outworkers"    %% "phantom-dsl"             % phantom,
-  "net.cakesolutions" %% "scala-kafka-client"      % kafkaClient,
-  "net.cakesolutions" %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
-  "org.slf4j"         % "slf4j-api"                % slf4j,
-  "org.typelevel"     %% "cats-core"               % cats,
+  "com.outworkers"     %% "phantom-dsl"             % phantom,
+  "net.cakesolutions"  %% "scala-kafka-client"      % kafkaClient,
+  "net.cakesolutions"  %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
+  "org.apache.commons" % "commons-collections4"     % commonsCollections,
+  "org.apache.commons" % "commons-lang3"            % commonsLang,
+  "org.slf4j"          % "slf4j-api"                % slf4j,
+  "org.typelevel"      %% "cats-core"               % cats,
   /* Test dependencies  */
   "org.scalatestplus.play" %% "scalatestplus-play"         % playTestPlus % Test,
   "net.cakesolutions"      %% "scala-kafka-client-testkit" % kafkaClient  % Test
@@ -57,8 +62,13 @@ lazy val app = (project in file(".")).settings(
   test in assembly := {}
 )
 
-// Enable Scala plugin
+// Required for Cats
+scalacOptions += "-Ypartial-unification"
+
+// Enable Play plugin
 enablePlugins(PlayScala)
+
+// Enable Docker plugin
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 enablePlugins(AshScriptPlugin)

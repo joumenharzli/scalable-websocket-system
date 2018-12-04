@@ -22,18 +22,15 @@ import java.util.UUID
 import org.joda.time.DateTime
 
 /**
-  * A representation of user notification
-  *
-  * @author jaharzli
-  */
-case class UserNotificationDto(id: UUID,
-                        content: String,
-                        seen: Boolean,
-                        createdAt: DateTime)
+ * A representation of user notification
+ *
+ * @author jaharzli
+ */
+case class UserNotificationDto(id: UUID, content: String, seen: Boolean, createdAt: DateTime)
 
 /**
-  * A representation of notification to add
-  *
-  * @author jaharzli
-  */
+ * A representation of notification to add
+ *
+ * @author jaharzli
+ */
 case class NotificationToAddDto(content: String, userId: UUID)

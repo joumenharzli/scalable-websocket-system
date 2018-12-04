@@ -21,15 +21,15 @@ import javax.inject.{Inject, Singleton}
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 /**
-  * REST Controller for notifications
-  *
-  * @author jaharzli
-  */
+ * REST Controller for notifications
+ *
+ * @author jaharzli
+ */
 @Singleton
 class NotificationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
-  def getAll = Action {
-    _ => Ok("Hello world")
+  def getAll = Action { _ =>
+    Ok("Hello world")
   }
 
 }

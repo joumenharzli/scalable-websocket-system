@@ -25,10 +25,10 @@ import com.outworkers.phantom.dsl._
 import com.typesafe.config.Config
 import domain.Notification
 import javax.inject.{Inject, Singleton}
-import org.joda.time.DateTime
 import repository.support.Page
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
  * An implementation of [[NotificationRepository]]
@@ -64,29 +64,26 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
     override def name: String = "created_at"
   }
 
-  override def insert(notification: Notification): Future[Notification] = {
-
-    val generatedId = UUID.randomUUID()
-
+  override def save(notification: Notification): Future[Notification] =
     insert
-      .value(_.id, generatedId)
+      .value(_.id, notification.id)
       .value(_.content, notification.content)
-      .value(_.seen, false)
+      .value(_.seen, notification.seen)
       .value(_.userId, notification.userId)
-      .value(_.createdAt, DateTime.now())
+      .value(_.createdAt, notification.createdAt)
       .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
       .future()
-      .map(_ => notification.copy(id = generatedId))
+      .map(_ => notification)
 
-  }
-
-  override def updateToSeen(id: UUID): Future[Unit] =
-    update
-      .where(_.id eqs id)
-      .modify(_.seen setTo true)
-      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
-      .future()
-      .map(_ => Future.unit)
+  override def updateToSeen(id: UUID): Try[Future[Unit]] =
+    Try(
+      update
+        .where(_.id eqs id)
+        .modify(_.seen setTo true)
+        .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+        .future()
+        .map(_ => Future.unit)
+    )
 
   override def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[Notification]]] = {
 

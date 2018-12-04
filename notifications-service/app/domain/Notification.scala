@@ -22,12 +22,8 @@ import java.util.UUID
 import org.joda.time.DateTime
 
 /**
-  * Notification
-  *
-  * @author jaharzli
-  */
-case class Notification(id: UUID,
-                        content: String,
-                        seen: Boolean,
-                        userId: UUID,
-                        createdAt: DateTime)
+ * Notification
+ *
+ * @author jaharzli
+ */
+case class Notification(id: UUID, content: String, seen: Boolean, userId: UUID, createdAt: DateTime)

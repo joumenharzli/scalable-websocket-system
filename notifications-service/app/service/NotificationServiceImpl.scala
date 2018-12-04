@@ -16,51 +16,77 @@
  */
 
 package service
+
 import java.util.UUID
 
-import cats.data.{NonEmptyList, Validated}
+import cats.data._
+import cats.implicits._
 import com.datastax.driver.core.PagingState
+import domain.Notification
 import javax.inject.Singleton
+import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 import repository.NotificationRepository
 import repository.support.Page
-import service.dto.{NotificationToAddDto, UserNotificationDto}
+import service.dto.NotificationToAddDto
+import service.support.Validator._
 
 import scala.concurrent.Future
+import scala.util.Try
 
 @Singleton
-class NotificationServiceImpl(val notificationRepository: NotificationRepository) extends NotificationService {
+class NotificationServiceImpl(val repository: NotificationRepository) extends NotificationService {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass.getName)
 
-  override def insert(notification: NotificationToAddDto): Future[UserNotificationDto] = {
+  override def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[Notification]] = {
 
-    logger.debug("Request to insert notification {}",notification)
+    logger.debug("Request to insert notification {}", notification)
 
-    // https://github.com/DanielaSfregola/data-validation/blob/master/src/main/scala/ValidationUsingValidatedNelAndErr.sc
-
-    (nonNullEntity(notification) , nonNullEntity(notification)) .mapN(NotificationToAddDto)
-
-  }
-
-  override def updateToSeen(id: UUID): Future[Unit]  = {
-
-    logger.debug("Request to set notification {} to seen",id)
+    validateNotification(notification)
+      .map(toEntity)
+      .map(repository.save)
 
   }
 
-  override def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[UserNotificationDto]]]  = {
+  override def updateToSeen(id: UUID): Validated[NonEmptyChain[String], Try[Future[Unit]]] = {
 
-    logger.debug("Request to find notifications for the user {} and paging state",userId,pagingState)
+    logger.debug("Request to set notification {} to seen", id)
+
+    notNull(id, "id in cannot be null")
+      .map(repository.updateToSeen)
 
   }
 
+  override def findByUserId(
+    userId: UUID,
+    pagingState: Option[PagingState]
+  ): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]] = {
 
-  def nonNullEntity(entity:NotificationToAddDto): Validated[NonEmptyList[String], NotificationToAddDto] = {
-    Option(entity) match {
-      case Some(x) => Validated.validNel(entity)
-      case None => Validated.invalidNel("Notification cannot be null")
-    }
+    logger.debug("Request to find notifications for the user {} and paging state", userId, pagingState)
+
+    notNull(userId, "user id in cannot be null")
+      .map(id => repository.findByUserId(id, pagingState))
+
   }
+
+  private def validateNotification(
+    notification: NotificationToAddDto
+  ): Validated[NonEmptyChain[String], NotificationToAddDto] =
+    notNull(notification, "notification cannot be null")
+      .andThen(
+        e =>
+          (
+            notBlank(e.content, "content cannot be null/empty"),
+            notNull(e.userId, "user id in cannot be null")
+          ).mapN(NotificationToAddDto)
+      )
+
+  private def toEntity(e: NotificationToAddDto): Notification =
+    Notification(id = UUID.randomUUID(),
+                 content = e.content,
+                 seen = false,
+                 userId = e.userId,
+                 createdAt = DateTime.now())
 
 }

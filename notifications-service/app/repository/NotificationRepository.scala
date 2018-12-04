@@ -41,6 +41,7 @@ import domain.Notification
 import repository.support.Page
 
 import scala.concurrent.Future
+import scala.util.Try
 
 /**
  * A repository for [[Notification]]
@@ -55,14 +56,14 @@ trait NotificationRepository {
    * @param notification entity to insert
    * @return the inserted entity
    */
-  def insert(notification: Notification): Future[Notification]
+  def save(notification: Notification): Future[Notification]
 
   /**
    * Update notification property seen to true
    *
    * @param id id of the notification
    */
-  def updateToSeen(id: UUID): Future[Unit]
+  def updateToSeen(id: UUID): Try[Future[Unit]]
 
   /**
    *  Find notifications by user id

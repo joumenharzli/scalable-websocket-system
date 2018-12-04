@@ -23,10 +23,10 @@ import play.api.routing.{Router, SimpleRouter}
 import web.NotificationController
 
 /**
-  * A Router for the [[web.NotificationController]]
-  *
-  * @author jaharzli
-  */
+ * A Router for the [[web.NotificationController]]
+ *
+ * @author jaharzli
+ */
 class ApiRouter @Inject()(controller: NotificationController) extends SimpleRouter {
 
   override def routes: Router.Routes = {
