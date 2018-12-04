@@ -17,11 +17,12 @@
 
 package web
 
+import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
 import cats.implicits._
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+import play.api.mvc._
 import play.libs.Json
 import service.NotificationService
 import service.dto.NotificationToAddDto
@@ -42,8 +43,8 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
     {
       val payload = request.body.as[NotificationToAddDto]
       service.insert(payload) match {
-        case Valid(future)   => future.map(_.toJson).map(Ok(_))
-        case Invalid(errors) => Future.successful(BadRequest(errors.toList.toJson))
+        case Valid(future)   => future.map(Json.toJson).map(Ok(_))
+        case Invalid(errors) => handleErrors(errors)
       }
     }
   }
@@ -52,20 +53,19 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
     {
       service.updateToSeen(id) match {
         case Valid(_)        => Future.successful(NoContent)
-        case Invalid(errors) => Future.successful(BadRequest(errors.toList.toJson))
+        case Invalid(errors) => handleErrors(errors)
       }
     }
   }
 
   def findByUserId(userId: String, paging: Option[String]): Action[AnyContent] = Action.async(
     service.findByUserId(userId, paging) match {
-      case Valid(future)   => future.map(_.toJson).map(Ok(_))
-      case Invalid(errors) => Future.successful(BadRequest(errors.toList.toJson))
+      case Valid(future)   => future.map(Json.toJson).map(Ok(_))
+      case Invalid(errors) => handleErrors(errors)
     }
   )
 
-  implicit class Jsonable[A](a: A) {
-    def toJson(implicit writes: Writes[A]): JsValue = Json.toJson(a)(writes)
-  }
+  private def handleErrors(errors: NonEmptyChain[String]): Future[Result] =
+    Future.successful(BadRequest(Json.toJson(errors.toList)))
 
 }
