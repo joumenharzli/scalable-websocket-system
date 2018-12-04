@@ -17,8 +17,6 @@
 
 package service
 
-import java.util.UUID
-
 import cats.data.{NonEmptyChain, Validated}
 import domain.Notification
 import repository.support.Page
@@ -47,7 +45,7 @@ trait NotificationService {
    *
    * @param id id of the notification
    */
-  def updateToSeen(id: UUID): Validated[NonEmptyChain[String], Try[Future[Unit]]]
+  def updateToSeen(id: String): Validated[NonEmptyChain[String], Try[Future[Unit]]]
 
   /**
    * Find notifications by user id
@@ -56,6 +54,6 @@ trait NotificationService {
    * @param pagingState state of the pagination this is blank for the first page
    * @return the found notifications and the next paging state
    */
-  def findByUserId(userId: UUID,
+  def findByUserId(userId: String,
                    pagingState: Option[String]): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]]
 }

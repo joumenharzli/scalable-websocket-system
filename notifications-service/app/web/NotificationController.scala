@@ -17,8 +17,6 @@
 
 package web
 
-import java.util.UUID
-
 import cats.data.Validated.{Invalid, Valid}
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Writes}
@@ -46,7 +44,7 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
   }
   }
 
-  def updateToSeen(id: UUID): Action[JsValue] = Action.async(parse.json) { request => {
+  def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { request => {
     service.updateToSeen(id) match {
       case Valid(x) => Future.successful(NoContent)
       case Invalid(x) => Future.successful(BadRequest(x.toJson))
@@ -54,7 +52,7 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
   }
   }
 
-  def findByUserId(userId: UUID,
+  def findByUserId(userId: String,
                    paging: Option[String]): Action[AnyContent] = Action.async(
     service.findByUserId(userId, paging) match {
       case Valid(x) => Future.successful(Ok(x.toJson))

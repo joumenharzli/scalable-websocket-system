@@ -49,17 +49,18 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
 
   }
 
-  override def updateToSeen(id: UUID): Validated[NonEmptyChain[String], Try[Future[Unit]]] = {
+  override def updateToSeen(id: String): Validated[NonEmptyChain[String], Try[Future[Unit]]] = {
 
     logger.debug("Request to set notification {} to seen", id)
 
     notNull(id, "id in cannot be null")
+      .map(UUID.fromString)
       .map(repository.updateToSeen)
 
   }
 
   override def findByUserId(
-                             userId: UUID,
+                             userId: String,
                              pagingString: Option[String]
                            ): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]] = {
 
@@ -71,6 +72,7 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
     } yield state
 
     notNull(userId, "user id in cannot be null")
+      .map(UUID.fromString)
       .map(id => repository.findByUserId(id, next))
 
   }

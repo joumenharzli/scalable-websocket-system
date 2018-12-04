@@ -23,14 +23,16 @@ import play.api.routing.{Router, SimpleRouter}
 import web.NotificationController
 
 /**
- * A Router for the [[web.NotificationController]]
- *
- * @author jaharzli
- */
+  * A Router for the [[web.NotificationController]]
+  *
+  * @author jaharzli
+  */
 class ApiRouter @Inject()(controller: NotificationController) extends SimpleRouter {
 
   override def routes: Router.Routes = {
-    case GET(p"/notifications") => controller.getAll
+    case POST(p"/notifications") => controller.add
+    case PUT(p"/notifications/$id/seen") => controller.updateToSeen(id)
+    case GET(p"/notifications/$userid" ? q_o"page=$page") => controller.findByUserId(userid, page)
   }
 
 }
