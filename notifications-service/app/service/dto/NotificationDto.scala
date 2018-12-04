@@ -48,6 +48,8 @@ object NotificationToAddDto {
 }
 
 object UserNotificationDto {
+  import play.api.libs.json.JodaWrites._
+  import play.api.libs.json.JodaReads._
   implicit val userNotificationWrites: Writes[UserNotificationDto] = Json.writes[UserNotificationDto]
 }
 
