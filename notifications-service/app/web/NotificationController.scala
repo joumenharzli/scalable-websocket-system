@@ -28,34 +28,36 @@ import service.dto.NotificationToAddDto
 import scala.concurrent.Future
 
 /**
-  * REST Controller for notifications
-  *
-  * @author jaharzli
-  */
+ * REST Controller for notifications
+ *
+ * @author jaharzli
+ */
 @Singleton
-class NotificationController @Inject()(cc: ControllerComponents, service: NotificationService) extends AbstractController(cc) {
+class NotificationController @Inject()(cc: ControllerComponents, service: NotificationService)
+    extends AbstractController(cc) {
 
-  def add: Action[JsValue] = Action.async(parse.json) { request => {
-    val payload = request.body.as[NotificationToAddDto]
-    service.insert(payload) match {
-      case Valid(x) => Future.successful(Ok(x.toJson))
-      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+  def add: Action[JsValue] = Action.async(parse.json) { request =>
+    {
+      val payload = request.body.as[NotificationToAddDto]
+      service.insert(payload) match {
+        case Valid(x)   => Future.successful(Ok(x.toJson))
+        case Invalid(x) => Future.successful(BadRequest(x.toJson))
+      }
     }
   }
-  }
 
-  def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { request => {
-    service.updateToSeen(id) match {
-      case Valid(x) => Future.successful(NoContent)
-      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+  def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { request =>
+    {
+      service.updateToSeen(id) match {
+        case Valid(x)   => Future.successful(NoContent)
+        case Invalid(x) => Future.successful(BadRequest(x.toJson))
+      }
     }
   }
-  }
 
-  def findByUserId(userId: String,
-                   paging: Option[String]): Action[AnyContent] = Action.async(
+  def findByUserId(userId: String, paging: Option[String]): Action[AnyContent] = Action.async(
     service.findByUserId(userId, paging) match {
-      case Valid(x) => Future.successful(Ok(x.toJson))
+      case Valid(x)   => Future.successful(Ok(x.toJson))
       case Invalid(x) => Future.successful(BadRequest(x.toJson))
     }
   )

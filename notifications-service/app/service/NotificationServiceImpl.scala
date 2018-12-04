@@ -60,14 +60,14 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
   }
 
   override def findByUserId(
-                             userId: String,
-                             pagingString: Option[String]
-                           ): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]] = {
+    userId: String,
+    pagingString: Option[String]
+  ): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]] = {
 
     logger.debug("Request to find notifications for the user {} and paging state", userId, pagingString)
 
     val next = for {
-      s <- pagingString
+      s     <- pagingString
       state <- Try(PagingState.fromString(s)).toOption
     } yield state
 
@@ -78,8 +78,8 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
   }
 
   private def validateNotification(
-                                    notification: NotificationToAddDto
-                                  ): Validated[NonEmptyChain[String], NotificationToAddDto] =
+    notification: NotificationToAddDto
+  ): Validated[NonEmptyChain[String], NotificationToAddDto] =
     notNull(notification, "notification cannot be null")
       .andThen(
         e =>
@@ -91,9 +91,9 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
 
   private def toEntity(e: NotificationToAddDto): Notification =
     Notification(id = UUID.randomUUID(),
-      content = e.content,
-      seen = false,
-      userId = e.userId,
-      createdAt = DateTime.now())
+                 content = e.content,
+                 seen = false,
+                 userId = e.userId,
+                 createdAt = DateTime.now())
 
 }
