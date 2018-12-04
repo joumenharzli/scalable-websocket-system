@@ -26,18 +26,17 @@ homepage := Some(url("https://github.com/joumenharzli/scalable-websocket-system"
 
 scalaVersion := "2.12.7"
 
-val kafkaClient   = "2.0.0"
-val slf4j         = "1.7.25"
-val phantom       = "2.29.0"
-val macroParadise = "2.1.0"
-val playTestPlus  = "3.1.2"
-val cats          = "1.5.0"
+val kafkaClient        = "2.0.0"
+val phantom            = "2.29.0"
+val macroParadise      = "2.1.0"
+val playTestPlus       = "3.1.2"
+val cats               = "1.5.0"
+val commonsCollections = "4.2"
+val commonsLang        = "3.8.1"
+val playJsonJoda       = "2.6.11"
 
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
-
-val commonsCollections = "4.2"
-val commonsLang        = "3.8.1"
 
 libraryDependencies ++= Seq(
   guice,
@@ -46,8 +45,9 @@ libraryDependencies ++= Seq(
   "net.cakesolutions"  %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
   "org.apache.commons" % "commons-collections4"     % commonsCollections,
   "org.apache.commons" % "commons-lang3"            % commonsLang,
-  "org.slf4j"          % "slf4j-api"                % slf4j,
   "org.typelevel"      %% "cats-core"               % cats,
+  "com.typesafe.play"  %% "play-json-joda"          % playJsonJoda,
+  "com.typesafe.play"  %% "play-json"               % "2.6.10",
   /* Test dependencies  */
   "org.scalatestplus.play" %% "scalatestplus-play"         % playTestPlus % Test,
   "net.cakesolutions"      %% "scala-kafka-client-testkit" % kafkaClient  % Test
