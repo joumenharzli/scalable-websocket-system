@@ -19,7 +19,6 @@ package service
 
 import java.util.UUID
 
-import cats.Monad
 import cats.data._
 import cats.implicits._
 import com.datastax.driver.core.PagingState
@@ -28,7 +27,6 @@ import javax.inject.Singleton
 import org.joda.time.DateTime
 import play.api.Logger
 import repository.NotificationRepository
-import repository.support.Page
 import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
 import service.support.Validator._
 
