@@ -19,6 +19,7 @@ package repository
 
 import java.util.UUID
 
+import cats.Monad
 import com.datastax.driver.core.PagingState
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl._
@@ -39,6 +40,8 @@ import scala.util.Try
 class NotificationRepositoryImpl @Inject()(config: Config, connection: CassandraConnection, ec: ExecutionContext)
     extends Table[NotificationRepositoryImpl, Notification]
     with NotificationRepository {
+
+  implicit val monad: Monad[Future] = cats.instances.future.catsStdInstancesForFuture
 
   implicit override def space: KeySpace = connection.provider.space
 

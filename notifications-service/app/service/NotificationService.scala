@@ -20,7 +20,6 @@ package service
 import java.util.UUID
 
 import cats.data.{NonEmptyChain, Validated}
-import com.datastax.driver.core.PagingState
 import domain.Notification
 import repository.support.Page
 import service.dto.NotificationToAddDto
@@ -58,5 +57,5 @@ trait NotificationService {
    * @return the found notifications and the next paging state
    */
   def findByUserId(userId: UUID,
-                   pagingState: Option[PagingState]): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]]
+                   pagingState: Option[String]): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]]
 }

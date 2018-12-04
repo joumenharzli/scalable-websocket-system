@@ -17,19 +17,53 @@
 
 package web
 
+import java.util.UUID
+
+import cats.data.Validated.{Invalid, Valid}
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.libs.json.{JsValue, Writes}
+import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+import play.libs.Json
+import service.NotificationService
+import service.dto.NotificationToAddDto
+
+import scala.concurrent.Future
 
 /**
- * REST Controller for notifications
- *
- * @author jaharzli
- */
+  * REST Controller for notifications
+  *
+  * @author jaharzli
+  */
 @Singleton
-class NotificationController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class NotificationController @Inject()(cc: ControllerComponents, service: NotificationService) extends AbstractController(cc) {
 
-  def getAll = Action { _ =>
-    Ok("Hello world")
+  def add: Action[JsValue] = Action.async(parse.json) { request => {
+    val payload = request.body.as[NotificationToAddDto]
+    service.insert(payload) match {
+      case Valid(x) => Future.successful(Ok(x.toJson))
+      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+    }
+  }
+  }
+
+  def updateToSeen(id: UUID): Action[JsValue] = Action.async(parse.json) { request => {
+    service.updateToSeen(id) match {
+      case Valid(x) => Future.successful(NoContent)
+      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+    }
+  }
+  }
+
+  def findByUserId(userId: UUID,
+                   paging: Option[String]): Action[AnyContent] = Action.async(
+    service.findByUserId(userId, paging) match {
+      case Valid(x) => Future.successful(Ok(x.toJson))
+      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+    }
+  )
+
+  implicit class Jsonable[A](a: A) {
+    def toJson(implicit writes: Writes[A]): JsValue = Json.toJson(a)(writes)
   }
 
 }
