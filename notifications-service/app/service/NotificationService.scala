@@ -17,10 +17,9 @@
 
 package service
 
-import cats.data.{NonEmptyChain, Validated}
 import domain.Notification
-import repository.support.Page
 import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
+import service.support.Validator.ValidationError
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -36,16 +35,18 @@ trait NotificationService {
    * Insert a new notification
    *
    * @param notification entity to insert
-   * @return the inserted entity
+   * @return the inserted entity or the validation errors
+   * @throws IllegalArgumentException if any given argument is invalid
    */
-  def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[UserNotificationDto]]
+  def insert(notification: NotificationToAddDto): Either[Seq[ValidationError], Future[UserNotificationDto]]
 
   /**
    * Update notification property seen to true
    *
    * @param id id of the notification
+   * @throws IllegalArgumentException if any given argument is invalid
    */
-  def updateToSeen(id: String): Validated[NonEmptyChain[String], Try[Future[Unit]]]
+  def updateToSeen(id: String): Try[Future[Unit]]
 
   /**
    * Find notifications by user id
@@ -53,9 +54,11 @@ trait NotificationService {
    * @param userId      id of the user
    * @param pagingState state of the pagination this is blank for the first page
    * @return the found notifications and the next paging state
+   * @throws IllegalArgumentException if any given argument is invalid
    */
   def findByUserId(
     userId: String,
     pagingState: Option[String]
-  ): Validated[NonEmptyChain[String], Future[UserNotificationPaginatedResult]]
+  ): Future[UserNotificationPaginatedResult]
+
 }

@@ -19,8 +19,6 @@ package service
 
 import java.util.UUID
 
-import cats.data._
-import cats.implicits._
 import com.datastax.driver.core.PagingState
 import domain.Notification
 import javax.inject.Singleton
@@ -42,61 +40,59 @@ class NotificationServiceImpl(repository: NotificationRepository, ec: ExecutionC
 
   override def insert(
     notification: NotificationToAddDto
-  ): Validated[NonEmptyChain[String], Future[UserNotificationDto]] = {
+  ): Either[Seq[ValidationError], Future[UserNotificationDto]] = {
 
     logger.debug(s"Request to insert notification $notification")
 
+    require(notification != null, "Notification cannot be null")
+
     validateNotification(notification)
       .map(toEntity)
-      .map(repository.save)
-      .map(future => future.map(toDto))
+      .map(repository.save(_).map(toDto))
 
   }
 
-  override def updateToSeen(id: String): Validated[NonEmptyChain[String], Try[Future[Unit]]] = {
+  override def updateToSeen(id: String): Try[Future[Unit]] = {
 
     logger.debug(s"Request to set notification $id to seen")
 
-    notNull(id, "id in cannot be null")
-      .map(UUID.fromString)
-      .map(repository.updateToSeen)
+    require(id != null, "id cannot be null")
+
+    repository.updateToSeen(UUID.fromString(id))
 
   }
 
   override def findByUserId(
     userId: String,
     pagingString: Option[String]
-  ): Validated[NonEmptyChain[String], Future[UserNotificationPaginatedResult]] = {
+  ): Future[UserNotificationPaginatedResult] = {
 
     logger.debug(s"Request to find notifications for the user $userId and paging state $pagingString")
+
+    require(userId != null, "user id cannot be null")
+    require(pagingString != null, "pagingString cannot be null")
 
     val next = for {
       s     <- pagingString
       state <- Try(PagingState.fromString(s)).toOption
     } yield state
 
-    notNull(userId, "user id in cannot be null")
-      .map(UUID.fromString)
-      .map(
-        id =>
-          repository
-            .findByUserId(id, next)
-            .map(page => UserNotificationPaginatedResult(page.results.map(toDto), page.next))
-      )
+    repository
+      .findByUserId(UUID.fromString(userId), next)
+      .map(page => UserNotificationPaginatedResult(page.results.map(toDto), page.next))
 
   }
 
   private def validateNotification(
     notification: NotificationToAddDto
-  ): Validated[NonEmptyChain[String], NotificationToAddDto] =
-    notNull(notification, "notification cannot be null")
-      .andThen(
-        e =>
-          (
-            notBlank(e.content, "content cannot be null/empty"),
-            notNull(e.userId, "user id in cannot be null")
-          ).mapN(NotificationToAddDto)
-      )
+  ): Either[Seq[ValidationError], NotificationToAddDto] = {
+
+    lazy val errors = notBlank(notification.content, "content cannot be null/empty") ++
+      notNull(notification.userId, "user id in cannot be null")
+
+    Either.cond(errors.isEmpty, notification, errors)
+
+  }
 
   private def toEntity(e: NotificationToAddDto): Notification =
     Notification(id = UUID.randomUUID(),
@@ -105,7 +101,6 @@ class NotificationServiceImpl(repository: NotificationRepository, ec: ExecutionC
                  userId = e.userId,
                  createdAt = DateTime.now())
 
-  private def toDto(e: Notification) =
-    UserNotificationDto(e.id, e.content, e.seen, e.createdAt)
+  private def toDto(e: Notification) = UserNotificationDto(e.id, e.content, e.seen, e.createdAt)
 
 }

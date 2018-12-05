@@ -20,9 +20,7 @@ package service.dto
 import java.util.UUID
 
 import org.joda.time.DateTime
-import play.api.libs.json.{Json, Reads, Writes}
-
-import scala.util.Try
+import play.api.libs.json.{JsString, Json, Reads, Writes}
 
 /**
  * A representation of user notification
@@ -48,8 +46,7 @@ object NotificationToAddDto {
 }
 
 object UserNotificationDto {
-  import play.api.libs.json.JodaWrites._
-  import play.api.libs.json.JodaReads._
+  implicit val dateTimeWrites: Writes[DateTime]                    = dt => JsString(dt.toString)
   implicit val userNotificationWrites: Writes[UserNotificationDto] = Json.writes[UserNotificationDto]
 }
 

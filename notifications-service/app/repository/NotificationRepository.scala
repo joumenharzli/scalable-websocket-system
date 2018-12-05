@@ -51,10 +51,11 @@ import scala.util.Try
 trait NotificationRepository {
 
   /**
-   *  Insert a new notification
+   * Insert a new notification
    *
    * @param notification entity to insert
    * @return the inserted entity
+   * @throws IllegalArgumentException if any given argument is invalid
    */
   def save(notification: Notification): Future[Notification]
 
@@ -62,15 +63,17 @@ trait NotificationRepository {
    * Update notification property seen to true
    *
    * @param id id of the notification
+   * @throws IllegalArgumentException if any given argument is invalid
    */
   def updateToSeen(id: UUID): Try[Future[Unit]]
 
   /**
-   *  Find notifications by user id
+   * Find notifications by user id
    *
-   * @param userId id of the user
+   * @param userId      id of the user
    * @param pagingState state of the pagination this is blank for the first page
    * @return the found notifications and the next paging state
+   * @throws IllegalArgumentException if any given argument is invalid
    */
   def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[Notification]]]
 }

@@ -19,7 +19,6 @@ package repository
 
 import java.util.UUID
 
-import cats.Monad
 import com.datastax.driver.core.PagingState
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl._
@@ -65,7 +64,12 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
     override def name: String = "created_at"
   }
 
-  override def save(notification: Notification): Future[Notification] =
+  override def save(notification: Notification): Future[Notification] = {
+
+    logger.debug(s"DB request to insert notification $notification")
+
+    require(notification != null, "Notification cannot be null")
+
     insert
       .value(_.id, notification.id)
       .value(_.content, notification.content)
@@ -75,18 +79,30 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
       .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
       .future()
       .map(_ => notification)
+  }
 
-  override def updateToSeen(id: UUID): Try[Future[Unit]] =
+  override def updateToSeen(id: UUID): Try[Future[Unit]] = {
+
+    logger.debug(s"DB request to set notification $id to seen")
+
+    require(id != null, "id cannot be null")
+
     Try(
       update
         .where(_.id eqs id)
         .modify(_.seen setTo true)
         .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
         .future()
-        .map(_ => Future.unit)
+        .map(_ => ())
     )
+  }
 
   override def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[Notification]]] = {
+
+    logger.debug(s"DB request to find notifications for the user $userId and paging state $pagingState")
+
+    require(userId != null, "user id cannot be null")
+    require(pagingState != null, "pagingString cannot be null")
 
     val stmt = select
       .where(_.userId eqs userId)

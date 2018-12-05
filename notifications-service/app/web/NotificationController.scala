@@ -17,17 +17,15 @@
 
 package web
 
-import cats.data.NonEmptyChain
-import cats.data.Validated.{Invalid, Valid}
-import cats.implicits._
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json._
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
-import play.libs.Json
 import service.NotificationService
 import service.dto.NotificationToAddDto
+import service.support.Validator
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 /**
  * REST Controller for notifications
@@ -39,33 +37,30 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
   implicit ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def add: Action[JsValue] = Action.async(parse.json) { request =>
+  def add: Action[JsValue] = Action.async(parse.json) { implicit request =>
     {
       val payload = request.body.as[NotificationToAddDto]
       service.insert(payload) match {
-        case Valid(future)   => future.map(Json.toJson).map(Ok(_))
-        case Invalid(errors) => handleErrors(errors)
+        case Right(future) => future.map(Json.toJson(_)).map(Ok(_))
+        case Left(errors)  => handleErrors(errors)
       }
     }
   }
 
-  def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { request =>
+  def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { implicit request =>
     {
       service.updateToSeen(id) match {
-        case Valid(_)        => Future.successful(NoContent)
-        case Invalid(errors) => handleErrors(errors)
+        case Success(_) => Future.successful(NoContent)
+        case Failure(_) => Future.successful(NotFound)
       }
     }
   }
 
   def findByUserId(userId: String, paging: Option[String]): Action[AnyContent] = Action.async(
-    service.findByUserId(userId, paging) match {
-      case Valid(future)   => future.map(Json.toJson).map(Ok(_))
-      case Invalid(errors) => handleErrors(errors)
-    }
+    service.findByUserId(userId, paging).map(Json.toJson(_)).map(Ok(_))
   )
 
-  private def handleErrors(errors: NonEmptyChain[String]): Future[Result] =
+  private def handleErrors(errors: Seq[Validator.ValidationError]): Future[Result] =
     Future.successful(BadRequest(Json.toJson(errors.toList)))
 
 }
