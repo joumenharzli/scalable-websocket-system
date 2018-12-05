@@ -25,33 +25,37 @@ import com.datastax.driver.core.PagingState
 import domain.Notification
 import javax.inject.Singleton
 import org.joda.time.DateTime
-import org.slf4j.{Logger, LoggerFactory}
+import play.api.Logger
 import repository.NotificationRepository
-import repository.support.Page
-import service.dto.NotificationToAddDto
+import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
 import service.support.Validator._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 @Singleton
-class NotificationServiceImpl(val repository: NotificationRepository) extends NotificationService {
+class NotificationServiceImpl(repository: NotificationRepository, ec: ExecutionContext) extends NotificationService {
 
-  val logger: Logger = LoggerFactory.getLogger(this.getClass.getName)
+  val logger = Logger(this.getClass)
 
-  override def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[Notification]] = {
+  implicit val executionContext: ExecutionContext = ec
 
-    logger.debug("Request to insert notification {}", notification)
+  override def insert(
+    notification: NotificationToAddDto
+  ): Validated[NonEmptyChain[String], Future[UserNotificationDto]] = {
+
+    logger.debug(s"Request to insert notification $notification")
 
     validateNotification(notification)
       .map(toEntity)
       .map(repository.save)
+      .map(future => future.map(toDto))
 
   }
 
   override def updateToSeen(id: String): Validated[NonEmptyChain[String], Try[Future[Unit]]] = {
 
-    logger.debug("Request to set notification {} to seen", id)
+    logger.debug(s"Request to set notification $id to seen")
 
     notNull(id, "id in cannot be null")
       .map(UUID.fromString)
@@ -62,9 +66,9 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
   override def findByUserId(
     userId: String,
     pagingString: Option[String]
-  ): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]] = {
+  ): Validated[NonEmptyChain[String], Future[UserNotificationPaginatedResult]] = {
 
-    logger.debug("Request to find notifications for the user {} and paging state", userId, pagingString)
+    logger.debug(s"Request to find notifications for the user $userId and paging state $pagingString")
 
     val next = for {
       s     <- pagingString
@@ -73,7 +77,12 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
 
     notNull(userId, "user id in cannot be null")
       .map(UUID.fromString)
-      .map(id => repository.findByUserId(id, next))
+      .map(
+        id =>
+          repository
+            .findByUserId(id, next)
+            .map(page => UserNotificationPaginatedResult(page.results.map(toDto), page.next))
+      )
 
   }
 
@@ -95,5 +104,8 @@ class NotificationServiceImpl(val repository: NotificationRepository) extends No
                  seen = false,
                  userId = e.userId,
                  createdAt = DateTime.now())
+
+  private def toDto(e: Notification) =
+    UserNotificationDto(e.id, e.content, e.seen, e.createdAt)
 
 }

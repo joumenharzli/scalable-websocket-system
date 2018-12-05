@@ -41,8 +41,6 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
     extends Table[NotificationRepositoryImpl, Notification]
     with NotificationRepository {
 
-  implicit val monad: Monad[Future] = cats.instances.future.catsStdInstancesForFuture
-
   implicit override def space: KeySpace = connection.provider.space
 
   implicit override def session: Session = connection.session

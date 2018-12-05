@@ -17,15 +17,17 @@
 
 package web
 
+import cats.data.NonEmptyChain
 import cats.data.Validated.{Invalid, Valid}
+import cats.implicits._
 import javax.inject.{Inject, Singleton}
-import play.api.libs.json.{JsValue, Writes}
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
+import play.api.libs.json._
+import play.api.mvc._
 import play.libs.Json
 import service.NotificationService
 import service.dto.NotificationToAddDto
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * REST Controller for notifications
@@ -33,15 +35,16 @@ import scala.concurrent.Future
  * @author jaharzli
  */
 @Singleton
-class NotificationController @Inject()(cc: ControllerComponents, service: NotificationService)
-    extends AbstractController(cc) {
+class NotificationController @Inject()(cc: ControllerComponents, service: NotificationService)(
+  implicit ec: ExecutionContext
+) extends AbstractController(cc) {
 
   def add: Action[JsValue] = Action.async(parse.json) { request =>
     {
       val payload = request.body.as[NotificationToAddDto]
       service.insert(payload) match {
-        case Valid(x)   => Future.successful(Ok(x.toJson))
-        case Invalid(x) => Future.successful(BadRequest(x.toJson))
+        case Valid(future)   => future.map(Json.toJson).map(Ok(_))
+        case Invalid(errors) => handleErrors(errors)
       }
     }
   }
@@ -49,21 +52,20 @@ class NotificationController @Inject()(cc: ControllerComponents, service: Notifi
   def updateToSeen(id: String): Action[JsValue] = Action.async(parse.json) { request =>
     {
       service.updateToSeen(id) match {
-        case Valid(x)   => Future.successful(NoContent)
-        case Invalid(x) => Future.successful(BadRequest(x.toJson))
+        case Valid(_)        => Future.successful(NoContent)
+        case Invalid(errors) => handleErrors(errors)
       }
     }
   }
 
   def findByUserId(userId: String, paging: Option[String]): Action[AnyContent] = Action.async(
     service.findByUserId(userId, paging) match {
-      case Valid(x)   => Future.successful(Ok(x.toJson))
-      case Invalid(x) => Future.successful(BadRequest(x.toJson))
+      case Valid(future)   => future.map(Json.toJson).map(Ok(_))
+      case Invalid(errors) => handleErrors(errors)
     }
   )
 
-  implicit class Jsonable[A](a: A) {
-    def toJson(implicit writes: Writes[A]): JsValue = Json.toJson(a)(writes)
-  }
+  private def handleErrors(errors: NonEmptyChain[String]): Future[Result] =
+    Future.successful(BadRequest(Json.toJson(errors.toList)))
 
 }

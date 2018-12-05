@@ -22,6 +22,8 @@ import java.util.UUID
 import org.joda.time.DateTime
 import play.api.libs.json.{Json, Reads, Writes}
 
+import scala.util.Try
+
 /**
  * A representation of user notification
  *
@@ -39,13 +41,21 @@ case class NotificationToAddDto(content: String, userId: UUID)
 object NotificationToAddDto {
   implicit val notificationToAddReads: Reads[NotificationToAddDto] = Reads[NotificationToAddDto] { json =>
     for {
-      content    <- (json \ "content").validate[String]
-      userId     <- (json \ "userId").validate[String]
-      userIdUUID <- UUID.fromString(userId)
-    } yield NotificationToAddDto(content, userIdUUID)
+      content <- (json \ "content").validate[String]
+      userId  <- (json \ "userId").validate[String]
+    } yield NotificationToAddDto(content, UUID.fromString(userId))
   }
 }
 
 object UserNotificationDto {
+  import play.api.libs.json.JodaWrites._
+  import play.api.libs.json.JodaReads._
   implicit val userNotificationWrites: Writes[UserNotificationDto] = Json.writes[UserNotificationDto]
+}
+
+case class UserNotificationPaginatedResult(results: List[UserNotificationDto], next: Option[String])
+
+object UserNotificationPaginatedResult {
+  implicit val userNotificationPaginatedResultWrites: Writes[UserNotificationPaginatedResult] =
+    Json.writes[UserNotificationPaginatedResult]
 }

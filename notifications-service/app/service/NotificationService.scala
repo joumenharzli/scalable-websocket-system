@@ -20,7 +20,7 @@ package service
 import cats.data.{NonEmptyChain, Validated}
 import domain.Notification
 import repository.support.Page
-import service.dto.NotificationToAddDto
+import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -38,7 +38,7 @@ trait NotificationService {
    * @param notification entity to insert
    * @return the inserted entity
    */
-  def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[Notification]]
+  def insert(notification: NotificationToAddDto): Validated[NonEmptyChain[String], Future[UserNotificationDto]]
 
   /**
    * Update notification property seen to true
@@ -54,6 +54,8 @@ trait NotificationService {
    * @param pagingState state of the pagination this is blank for the first page
    * @return the found notifications and the next paging state
    */
-  def findByUserId(userId: String,
-                   pagingState: Option[String]): Validated[NonEmptyChain[String], Future[Page[List[Notification]]]]
+  def findByUserId(
+    userId: String,
+    pagingState: Option[String]
+  ): Validated[NonEmptyChain[String], Future[UserNotificationPaginatedResult]]
 }
