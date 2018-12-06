@@ -20,4 +20,7 @@
 cd notifications-dispatcher
 sbt  docker:publishLocal
 cd ..
+cd notifications-service
+sbt  docker:publishLocal
+cd ..
 docker-compose up -d --build

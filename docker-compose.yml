@@ -30,6 +30,22 @@ services:
     networks:
       - app
 
+  service-1:
+    image: joumenharzli/notifications-service:latest
+    hostname: service-1
+    container_name: service-1
+    environment:
+      - PORT=8081
+      - CASSANDRA_HOST=cassandra
+      - CASSANDRA_KEYSPACE=app
+    ports:
+      - 8081:8081
+    depends_on:
+      - kafka
+      - cassandra
+    networks:
+      - app
+
   nginx:
     build: nginx
     image: joumenharzli/nginx:latest
@@ -67,6 +83,15 @@ services:
       - 29092:29092
     depends_on:
       - zookeeper
+    networks:
+      - app
+
+  cassandra:
+    image: cassandra:2
+    hostname: cassandra
+    container_name: cassandra
+    environment:
+     - CASSANDRA_CLUSTER_NAME=app
     networks:
       - app
 

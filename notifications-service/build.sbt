@@ -84,4 +84,6 @@ dockerExposedPorts := Seq(8080)
 dockerExposedVolumes := Seq(logsPath)
 javaOptions in Universal ++= Seq("-Dconfig.resource=application-docker.conf",
                                  "-Dlogback.configurationFile=logback-docker.xml",
-                                 "-Djava.security.egd=file:/dev/./urandom")
+                                 "-Djava.security.egd=file:/dev/./urandom",
+                                "-Dpidfile.path=/dev/null"
+)
