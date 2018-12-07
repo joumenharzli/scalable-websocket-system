@@ -19,21 +19,22 @@ package provider
 
 import com.outworkers.phantom.connectors.{CassandraConnection, ContactPoints}
 import com.typesafe.config.Config
-import javax.inject.{Inject, Provider}
+import javax.inject.{Inject, Provider, Singleton}
 
 import scala.collection.JavaConverters._
 
 /**
- * A provider for [[CassandraConnection]]
- *
- * @author jaharzli
- */
+  * A provider for [[CassandraConnection]]
+  *
+  * @author jaharzli
+  */
+@Singleton
 class CassandraConnectionProvider @Inject()(config: Config) extends Provider[CassandraConnection] {
 
   override def get(): CassandraConnection = {
 
     val contactPoints = config.getStringList("cassandra.contactPoints")
-    val keyspace      = config.getString("cassandra.keyspace")
+    val keyspace = config.getString("cassandra.keyspace")
 
     ContactPoints(contactPoints.asScala)
       .keySpace(keyspace)

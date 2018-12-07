@@ -33,6 +33,7 @@ val playTestPlus       = "3.1.2"
 val cats               = "1.5.0"
 val commonsCollections = "4.2"
 val commonsLang        = "3.8.1"
+val scalaGuice = "4.2.1"
 
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
@@ -45,6 +46,7 @@ libraryDependencies ++= Seq(
   "org.typelevel"      %% "cats-core"               % cats,
   "org.apache.commons" % "commons-collections4"     % commonsCollections,
   "org.apache.commons" % "commons-lang3"            % commonsLang,
+  "net.codingwell" %% "scala-guice" % scalaGuice,
   /* Test dependencies  */
   "org.scalatestplus.play" %% "scalatestplus-play"         % playTestPlus % Test,
   "net.cakesolutions"      %% "scala-kafka-client-testkit" % kafkaClient  % Test
