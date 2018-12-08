@@ -20,9 +20,8 @@ package service
 import java.util.UUID
 
 import com.datastax.driver.core.PagingState
-import com.google.inject.Inject
+import javax.inject.Inject
 import domain.Notification
-import javax.inject.Singleton
 import org.joda.time.DateTime
 import play.api.Logger
 import repository.NotificationRepository
@@ -32,8 +31,8 @@ import service.support.Validator._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-@Singleton
-class NotificationServiceImpl @Inject()(repository: NotificationRepository, ec: ExecutionContext) extends NotificationService {
+class NotificationServiceImpl @Inject()(repository: NotificationRepository, ec: ExecutionContext)
+    extends NotificationService {
 
   val logger = Logger(this.getClass)
 

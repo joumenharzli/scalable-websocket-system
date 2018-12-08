@@ -35,7 +35,6 @@ import scala.util.Try
  *
  * @author jaharzli
  */
-@Singleton
 class NotificationRepositoryImpl @Inject()(config: Config, connection: CassandraConnection, ec: ExecutionContext)
     extends Table[NotificationRepositoryImpl, Notification]
     with NotificationRepository {

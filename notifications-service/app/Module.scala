@@ -7,10 +7,10 @@ import service.{NotificationService, NotificationServiceImpl}
 import javax.inject.Singleton
 
 /**
-  * Guice Module
-  *
-  * @author jaharzli
-  */
+ * Guice Module
+ *
+ * @author jaharzli
+ */
 class Module extends AbstractModule with ScalaModule {
 
   override def configure(): Unit = {
