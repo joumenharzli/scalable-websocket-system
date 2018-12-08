@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright (C) 2018  Joumen Ali HARZLI
  *
@@ -28,21 +26,27 @@ homepage := Some(url("https://github.com/joumenharzli/scalable-websocket-system"
 
 scalaVersion := "2.12.7"
 
-val kafkaClient   = "2.0.0"
-val slf4j         = "1.7.25"
-val phantom       = "2.29.0"
-val macroParadise = "2.1.0"
-val playTestPlus  = "3.1.2"
+val kafkaClient        = "2.0.0"
+val phantom            = "2.29.0"
+val macroParadise      = "2.1.0"
+val playTestPlus       = "3.1.2"
+val cats               = "1.5.0"
+val commonsCollections = "4.2"
+val commonsLang        = "3.8.1"
+val scalaGuice         = "4.2.1"
 
 resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
 resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
   guice,
-  "com.outworkers"    %% "phantom-dsl"             % phantom,
-  "net.cakesolutions" %% "scala-kafka-client"      % kafkaClient,
-  "net.cakesolutions" %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
-  "org.slf4j"         % "slf4j-api"                % slf4j,
+  "com.outworkers"     %% "phantom-dsl"             % phantom,
+  "net.cakesolutions"  %% "scala-kafka-client"      % kafkaClient,
+  "net.cakesolutions"  %% "scala-kafka-client-akka" % kafkaClient exclude ("com.typesafe.akka", "akka-actor"),
+  "org.typelevel"      %% "cats-core"               % cats,
+  "org.apache.commons" % "commons-collections4"     % commonsCollections,
+  "org.apache.commons" % "commons-lang3"            % commonsLang,
+  "net.codingwell"     %% "scala-guice"             % scalaGuice,
   /* Test dependencies  */
   "org.scalatestplus.play" %% "scalatestplus-play"         % playTestPlus % Test,
   "net.cakesolutions"      %% "scala-kafka-client-testkit" % kafkaClient  % Test
@@ -57,8 +61,13 @@ lazy val app = (project in file(".")).settings(
   test in assembly := {}
 )
 
-// Enable Scala plugin
+// Required for Cats
+scalacOptions += "-Ypartial-unification"
+
+// Enable Play plugin
 enablePlugins(PlayScala)
+
+// Enable Docker plugin
 enablePlugins(JavaAppPackaging)
 enablePlugins(DockerPlugin)
 enablePlugins(AshScriptPlugin)
@@ -75,6 +84,9 @@ dockerLabels := Map("maintainer" -> organizationName.value)
 dockerEnvVars := Map("APP_DIR"   -> dockerAppPath)
 dockerExposedPorts := Seq(8080)
 dockerExposedVolumes := Seq(logsPath)
-javaOptions in Universal ++= Seq("-Dconfig.resource=application-docker.conf",
-                                 "-Dlogback.configurationFile=logback-docker.xml",
-                                 "-Djava.security.egd=file:/dev/./urandom")
+javaOptions in Universal ++= Seq(
+  "-Dconfig.resource=application-docker.conf",
+  "-Dlogback.configurationFile=logback-docker.xml",
+  "-Djava.security.egd=file:/dev/./urandom",
+  "-Dpidfile.path=/dev/null"
+)

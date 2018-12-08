@@ -15,49 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package repository
+package service
 
-/*
- * Copyright (C) 2018  Joumen Ali HARZLI
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-import java.util.UUID
-
-import com.datastax.driver.core.PagingState
 import domain.Notification
-import repository.support.Page
+import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
+import service.support.Validator.ValidationError
 
 import scala.concurrent.Future
 import scala.util.Try
 
 /**
- * A repository for [[Notification]]
+ * A service for managing [[Notification]]
  *
  * @author jaharzli
  */
-trait NotificationRepository {
+trait NotificationService {
 
   /**
    * Insert a new notification
    *
    * @param notification entity to insert
-   * @return the inserted entity
+   * @return the inserted entity or the validation errors
    * @throws IllegalArgumentException if any given argument is invalid
    */
-  def save(notification: Notification): Future[Notification]
+  def insert(notification: NotificationToAddDto): Either[Seq[ValidationError], Future[UserNotificationDto]]
 
   /**
    * Update notification property seen to true
@@ -65,7 +46,7 @@ trait NotificationRepository {
    * @param id id of the notification
    * @throws IllegalArgumentException if any given argument is invalid
    */
-  def updateToSeen(id: UUID): Try[Future[Unit]]
+  def updateToSeen(id: String): Try[Future[Unit]]
 
   /**
    * Find notifications by user id
@@ -75,5 +56,9 @@ trait NotificationRepository {
    * @return the found notifications and the next paging state
    * @throws IllegalArgumentException if any given argument is invalid
    */
-  def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[Notification]]]
+  def findByUserId(
+    userId: String,
+    pagingState: Option[String]
+  ): Future[UserNotificationPaginatedResult]
+
 }

@@ -28,13 +28,13 @@ import javax.inject.{Inject, Singleton}
 import repository.support.Page
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 /**
  * An implementation of [[NotificationRepository]]
  *
  * @author jaharzli
  */
-@Singleton
 class NotificationRepositoryImpl @Inject()(config: Config, connection: CassandraConnection, ec: ExecutionContext)
     extends Table[NotificationRepositoryImpl, Notification]
     with NotificationRepository {
@@ -63,31 +63,45 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
     override def name: String = "created_at"
   }
 
-  override def insert(notification: Notification): Future[Notification] = {
+  override def save(notification: Notification): Future[Notification] = {
 
-    val generatedId = UUID.randomUUID()
+    logger.debug(s"DB request to insert notification $notification")
+
+    require(notification != null, "Notification cannot be null")
 
     insert
-      .value(_.id, generatedId)
+      .value(_.id, notification.id)
       .value(_.content, notification.content)
-      .value(_.seen, false)
+      .value(_.seen, notification.seen)
       .value(_.userId, notification.userId)
       .value(_.createdAt, notification.createdAt)
       .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
       .future()
-      .map(_ => notification.copy(id = generatedId))
-
+      .map(_ => notification)
   }
 
-  override def updateToSeen(id: UUID): Future[Unit] =
-    update
-      .where(_.id eqs id)
-      .modify(_.seen setTo true)
-      .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
-      .future()
-      .map(_ => Future.unit)
+  override def updateToSeen(id: UUID): Try[Future[Unit]] = {
+
+    logger.debug(s"DB request to set notification $id to seen")
+
+    require(id != null, "id cannot be null")
+
+    Try(
+      update
+        .where(_.id eqs id)
+        .modify(_.seen setTo true)
+        .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
+        .future()
+        .map(_ => ())
+    )
+  }
 
   override def findByUserId(userId: UUID, pagingState: Option[PagingState]): Future[Page[List[Notification]]] = {
+
+    logger.debug(s"DB request to find notifications for the user $userId and paging state $pagingState")
+
+    require(userId != null, "user id cannot be null")
+    require(pagingState != null, "pagingString cannot be null")
 
     val stmt = select
       .where(_.userId eqs userId)
