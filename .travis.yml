@@ -10,3 +10,10 @@ matrix:
     - sbt assembly
     before_script:
     - cd ./notifications-dispatcher/
+  - language: scala
+    jdk: oraclejdk8
+    script:
+    - sbt compile
+    - sbt assembly
+    before_script:
+    - cd ./notifications-service/
