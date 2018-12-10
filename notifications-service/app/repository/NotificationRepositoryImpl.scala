@@ -24,10 +24,11 @@ import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl._
 import com.typesafe.config.Config
 import domain.Notification
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import repository.support.Page
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -47,7 +48,8 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
 
   implicit val executionContext: ExecutionContext = ec
 
-  val pageSize: Int = config.getInt("cassandra.notifications.page-size")
+  val pageSize: Int    = config.getInt("cassandra.notifications.page-size")
+  val maxWaitTime: Int = config.getInt("cassandra.tables.create.maxWaitTime")
 
   object id extends UUIDColumn with PartitionKey
 
@@ -62,6 +64,9 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
   object createdAt extends DateTimeColumn {
     override def name: String = "created_at"
   }
+
+  // create table if not exists
+  Await.ready(this.create.ifNotExists().future(), maxWaitTime.seconds)
 
   override def save(notification: Notification): Future[Notification] = {
 

@@ -1,10 +1,10 @@
 import com.google.inject.AbstractModule
 import com.outworkers.phantom.connectors.CassandraConnection
+import javax.inject.Singleton
 import net.codingwell.scalaguice.ScalaModule
 import provider.CassandraConnectionProvider
 import repository.{NotificationRepository, NotificationRepositoryImpl}
 import service.{NotificationService, NotificationServiceImpl}
-import javax.inject.Singleton
 
 /**
  * Guice Module

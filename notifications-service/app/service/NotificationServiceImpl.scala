@@ -20,8 +20,8 @@ package service
 import java.util.UUID
 
 import com.datastax.driver.core.PagingState
-import javax.inject.Inject
 import domain.Notification
+import javax.inject.Inject
 import org.joda.time.DateTime
 import play.api.Logger
 import repository.NotificationRepository
