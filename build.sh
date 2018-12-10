@@ -17,10 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-cd notifications-dispatcher
-sbt  docker:publishLocal
-cd ..
-cd notifications-service
-sbt  docker:publishLocal
-cd ..
+echo "Building Notifications dispatcher"
+sh -c "cd notifications-dispatcher && sbt  docker:publishLocal"
+
+echo "Building Notifications service"
+sh -c "cd notifications-service && sbt  docker:publishLocal"
+
+echo "Running docker compose"
 docker-compose up -d --build

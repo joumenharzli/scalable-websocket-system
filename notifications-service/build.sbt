@@ -57,7 +57,8 @@ addCompilerPlugin("org.scalamacros" % "paradise" % macroParadise cross CrossVers
 // Assembly config
 lazy val app = (project in file(".")).settings(
   assemblyJarName in assembly := "notifications-service.jar",
-  mainClass in assembly := Some("Application"),
+  mainClass in assembly := Some("play.core.server.ProdServerStart"),
+  fullClasspath in assembly += Attributed.blank(PlayKeys.playPackageAssets.value),
   test in assembly := {}
 )
 
