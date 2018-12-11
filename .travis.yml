@@ -6,12 +6,12 @@ matrix:
   - language: scala
     jdk: oraclejdk8
     script:
-    - sbt compile
+    - sbt clean compile
     before_script:
     - cd ./notifications-dispatcher/
   - language: scala
     jdk: oraclejdk8
     script:
-    - sbt compile
+    - sbt clean compile
     before_script:
     - cd ./notifications-service/
