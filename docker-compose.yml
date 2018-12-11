@@ -92,6 +92,8 @@ services:
     container_name: cassandra
     environment:
      - CASSANDRA_CLUSTER_NAME=app
+    ports:
+      - 9042:9042
     networks:
       - app
 
