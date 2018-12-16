@@ -87,9 +87,11 @@ services:
       - app
 
   cassandra:
-    image: cassandra:2
+    image: cassandra:3
     hostname: cassandra
     container_name: cassandra
+    volumes:
+     - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
     environment:
      - CASSANDRA_CLUSTER_NAME=app
     ports:

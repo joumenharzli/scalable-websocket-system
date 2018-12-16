@@ -20,6 +20,8 @@ package repository
 import java.util.UUID
 
 import com.datastax.driver.core.PagingState
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.options.TablePropertyClause
 import com.outworkers.phantom.connectors.CassandraConnection
 import com.outworkers.phantom.dsl._
 import com.typesafe.config.Config
@@ -66,7 +68,9 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
   }
 
   // create table if not exists
-  Await.ready(this.create.ifNotExists().future(), maxWaitTime.seconds)
+  Await.ready(this.create.ifNotExists()
+    // activate cdc
+    .`with`(new TablePropertyClause { override def qb: CQLQuery = new CQLQuery("cdc=true") }).future(), maxWaitTime.seconds)
 
   override def save(notification: Notification): Future[Notification] = {
 
