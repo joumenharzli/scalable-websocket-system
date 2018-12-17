@@ -53,24 +53,27 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
   val pageSize: Int    = config.getInt("cassandra.notifications.page-size")
   val maxWaitTime: Int = config.getInt("cassandra.tables.create.maxWaitTime")
 
-  object id extends UUIDColumn with PartitionKey
+  object userId extends UUIDColumn with PartitionKey {
+    override def name: String = "user_id"
+  }
+
+  object createdAt extends DateTimeColumn with ClusteringOrder with Descending {
+    override def name: String = "created_at"
+  }
+
+  object id extends UUIDColumn with ClusteringOrder with Descending
 
   object content extends StringColumn
 
   object seen extends BooleanColumn
 
-  object userId extends UUIDColumn with Index {
-    override def name: String = "user_id"
-  }
-
-  object createdAt extends DateTimeColumn {
-    override def name: String = "created_at"
-  }
-
   // create table if not exists
-  Await.ready(this.create.ifNotExists()
-    // activate cdc
-    .`with`(new TablePropertyClause { override def qb: CQLQuery = new CQLQuery("cdc=true") }).future(), maxWaitTime.seconds)
+  Await.ready(this.create
+                .ifNotExists()
+                // activate cdc
+                .`with`(new TablePropertyClause { override def qb: CQLQuery = new CQLQuery("cdc=true") })
+                .future(),
+              maxWaitTime.seconds)
 
   override def save(notification: Notification): Future[Notification] = {
 
@@ -89,15 +92,19 @@ class NotificationRepositoryImpl @Inject()(config: Config, connection: Cassandra
       .map(_ => notification)
   }
 
-  override def updateToSeen(id: UUID): Try[Future[Unit]] = {
+  override def updateToSeen(userId: UUID, createdAt: DateTime, notificationId: UUID): Try[Future[Unit]] = {
 
-    logger.debug(s"DB request to set notification $id to seen")
+    logger.debug(s"DB request to set notification $notificationId to seen")
 
-    require(id != null, "id cannot be null")
+    require(userId != null, "user id cannot be null")
+    require(createdAt != null, "created at cannot be null")
+    require(notificationId != null, "notification id cannot be null")
 
     Try(
       update
-        .where(_.id eqs id)
+        .where(_.userId eqs userId)
+        .and(_.createdAt eqs createdAt)
+        .and(_.id eqs notificationId)
         .modify(_.seen setTo true)
         .consistencyLevel_=(ConsistencyLevel.LOCAL_QUORUM)
         .future()

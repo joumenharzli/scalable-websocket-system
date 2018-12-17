@@ -52,18 +52,20 @@ class NotificationServiceImpl @Inject()(repository: NotificationRepository, ec: 
 
   }
 
-  override def updateToSeen(id: String): Try[Future[Unit]] = {
+  override def updateToSeen(userId: UUID, createdAt: DateTime, notificationId: UUID): Try[Future[Unit]] = {
 
-    logger.debug(s"Request to set notification $id to seen")
+    logger.debug(s"Request to set notification $notificationId to seen")
 
-    require(id != null, "id cannot be null")
+    require(userId != null, "user id cannot be null")
+    require(createdAt != null, "created at cannot be null")
+    require(notificationId != null, "notification id cannot be null")
 
-    repository.updateToSeen(UUID.fromString(id))
+    repository.updateToSeen(userId, createdAt, notificationId)
 
   }
 
   override def findByUserId(
-    userId: String,
+    userId: UUID,
     pagingString: Option[String]
   ): Future[UserNotificationPaginatedResult] = {
 
@@ -78,7 +80,7 @@ class NotificationServiceImpl @Inject()(repository: NotificationRepository, ec: 
     } yield state
 
     repository
-      .findByUserId(UUID.fromString(userId), next)
+      .findByUserId(userId, next)
       .map(page => UserNotificationPaginatedResult(page.results.map(toDto), page.next))
 
   }

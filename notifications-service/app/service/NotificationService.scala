@@ -17,7 +17,10 @@
 
 package service
 
+import java.util.UUID
+
 import domain.Notification
+import org.joda.time.DateTime
 import service.dto.{NotificationToAddDto, UserNotificationDto, UserNotificationPaginatedResult}
 import service.support.Validator.ValidationError
 
@@ -43,10 +46,12 @@ trait NotificationService {
   /**
    * Update notification property seen to true
    *
-   * @param id id of the notification
+   * @param userId id of the user
+   * @param createdAt date of creation of the notification
+   * @param notificationId id of the notification
    * @throws IllegalArgumentException if any given argument is invalid
    */
-  def updateToSeen(id: String): Try[Future[Unit]]
+  def updateToSeen(userId: UUID, createdAt: DateTime, notificationId: UUID): Try[Future[Unit]]
 
   /**
    * Find notifications by user id
@@ -57,7 +62,7 @@ trait NotificationService {
    * @throws IllegalArgumentException if any given argument is invalid
    */
   def findByUserId(
-    userId: String,
+    userId: UUID,
     pagingState: Option[String]
   ): Future[UserNotificationPaginatedResult]
 

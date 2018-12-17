@@ -30,8 +30,11 @@ import web.NotificationController
 class ApiRouter @Inject()(controller: NotificationController) extends SimpleRouter {
 
   override def routes: Router.Routes = {
-    case POST(p"/notifications")                          => controller.add
-    case PUT(p"/notifications/$id/seen")                  => controller.updateToSeen(id)
+    case POST(p"/notifications") => controller.add
+
+    case PUT(p"/notifications/$userId/$creationDate/$notificationId/seen") =>
+      controller.updateToSeen(userId, creationDate, notificationId)
+
     case GET(p"/notifications/$userid" ? q_o"page=$page") => controller.findByUserId(userid, page)
   }
 

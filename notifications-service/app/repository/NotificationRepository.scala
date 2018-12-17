@@ -38,6 +38,7 @@ import java.util.UUID
 
 import com.datastax.driver.core.PagingState
 import domain.Notification
+import org.joda.time.DateTime
 import repository.support.Page
 
 import scala.concurrent.Future
@@ -62,10 +63,12 @@ trait NotificationRepository {
   /**
    * Update notification property seen to true
    *
-   * @param id id of the notification
+   * @param userId id of the user
+   * @param createdAt date of creation of the notification
+   * @param notificationId id of the notification
    * @throws IllegalArgumentException if any given argument is invalid
    */
-  def updateToSeen(id: UUID): Try[Future[Unit]]
+  def updateToSeen(userId: UUID, createdAt: DateTime, notificationId: UUID): Try[Future[Unit]]
 
   /**
    * Find notifications by user id
