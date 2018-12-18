@@ -17,6 +17,22 @@
 
 package repository
 
+import java.util.UUID
+
+import com.datastax.driver.core.PagingState
+import com.outworkers.phantom.builder.query.engine.CQLQuery
+import com.outworkers.phantom.builder.query.options.TablePropertyClause
+import com.outworkers.phantom.connectors.CassandraConnection
+import com.outworkers.phantom.dsl._
+import com.typesafe.config.Config
+import domain.Notification
+import javax.inject.Inject
+import repository.support.Page
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.Try
+
 /**
  * An implementation of [[NotificationRepository]]
  *
