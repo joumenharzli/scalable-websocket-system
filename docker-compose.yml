@@ -93,7 +93,7 @@ services:
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
       CONNECTOR_NAME: cassandra-sink-notifications
       CONNECTOR_CONNECT_CASSANDRA_SINK_KCQL: 'INSERT INTO notifications SELECT * FROM notifications'
-      CONNECTOR_TOPICS: topic_consumer_logs
+      CONNECTOR_TOPICS: topic-consumer-logs
       CONNECTOR_CONNECT_CASSANDRA_CLUSTER_NAME: cassandra
     ports:
     - '8083:8083'
