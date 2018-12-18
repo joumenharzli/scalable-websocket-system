@@ -22,41 +22,41 @@ services:
     hostname: dispatcher-1
     container_name: dispatcher-1
     environment:
-      - KAFKA_SERVERS=kafka:9092
-      - KAFKA_GROUP_ID=dispatcher-1
-      - KAFKA_TOPIC=notifications
+    - KAFKA_SERVERS=kafka:9092
+    - KAFKA_GROUP_ID=dispatcher-1
+    - KAFKA_TOPIC=notifications
     depends_on:
-      - kafka
+    - kafka
     networks:
-      - app
+    - app
 
   service-1:
     image: joumenharzli/notifications-service:latest
     hostname: service-1
     container_name: service-1
     environment:
-      - PORT=8081
-      - CASSANDRA_HOST=cassandra
-      - CASSANDRA_KEYSPACE=app
+    - PORT=8081
+    - CASSANDRA_HOST=cassandra
+    - CASSANDRA_KEYSPACE=app
     ports:
-      - 8081:8081
+    - 8081:8081
     depends_on:
-      - kafka
-      - cassandra
+    - kafka
+    - cassandra
     networks:
-      - app
+    - app
 
   nginx:
     build: nginx
     image: joumenharzli/nginx:latest
     container_name: nginx
     ports:
-      - 80:80
-      - 443:443
+    - 80:80
+    - 443:443
     depends_on:
-      - dispatcher-1
+    - dispatcher-1
     networks:
-      - app
+    - app
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.0.1
@@ -66,7 +66,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     networks:
-      - app
+    - app
 
   kafka:
     image: confluentinc/cp-kafka:5.0.1
@@ -80,24 +80,54 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     ports:
-      - 29092:29092
+    - 29092:29092
     depends_on:
-      - zookeeper
+    - zookeeper
     networks:
-      - app
+    - app
+
+  kafka-connect:
+    image: datamountaineer/kafka-connect-cassandra:1.1.0
+    hostname: kafka-connect
+    container_name: kafka-connect
+    environment:
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: "connect-cassandra-sink"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-cassandra-sink-status"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-cassandra-sink-config"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-cassandra-sink-offset"
+      CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_INTERNAL_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECTOR_CONNECTOR_CLASS: "com.datamountaineer.streamreactor.connect.cassandra.CassandraSinkConnector"
+      CONNECTOR_TASKS_MAX: 1
+      CONNECT_LOG4J_LOGGERS: org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR
+      CONNECT_REST_HOST_NAME: 0.0.0.0
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECTOR_NAME: "cassandra-sink-notifications"
+      CONNECTOR_CONNECT_CASSANDRA_SINK_KCQL: "INSERT INTO notifications SELECT * FROM notifications"
+      CONNECTOR_TOPICS: "topic_consumer_logs"
+      CONNECTOR_CONNECT_CASSANDRA_CLUSTER_NAME: "cassandra"
+    depends_on:
+    - kafka
+    - cassandra
+    ports:
+    - '8083:8083'
+    networks:
+    - app
 
   cassandra:
     image: cassandra:3
     hostname: cassandra
     container_name: cassandra
-    volumes:
-     - ./cassandra/cassandra.yaml:/etc/cassandra/cassandra.yaml
     environment:
-     - CASSANDRA_CLUSTER_NAME=app
+    - CASSANDRA_CLUSTER_NAME=app
     ports:
-      - 9042:9042
+    - 9042:9042
     networks:
-      - app
+    - app
 
 networks:
   app:
