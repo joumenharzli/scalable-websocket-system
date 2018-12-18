@@ -1,5 +1,7 @@
 version: '3'
+
 services:
+
   dispatcher-1:
     image: 'joumenharzli/notifications-dispatcher:latest'
     hostname: dispatcher-1
@@ -12,6 +14,7 @@ services:
     - kafka
     networks:
     - app
+
   service-1:
     image: 'joumenharzli/notifications-service:latest'
     hostname: service-1
@@ -27,6 +30,7 @@ services:
     - cassandra
     networks:
     - app
+
   nginx:
     build: nginx
     image: 'joumenharzli/nginx:latest'
@@ -38,6 +42,7 @@ services:
     - dispatcher-1
     networks:
     - app
+
   zookeeper:
     image: 'confluentinc/cp-zookeeper:5.0.1'
     hostname: zookeeper
@@ -47,6 +52,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     networks:
     - app
+
   kafka:
     image: 'confluentinc/cp-kafka:5.0.1'
     hostname: kafka
@@ -64,6 +70,7 @@ services:
     - zookeeper
     networks:
     - app
+
   kafka-connect:
     image: 'datamountaineer/kafka-connect-cassandra:1.1.0'
     hostname: kafka-connect
@@ -79,7 +86,7 @@ services:
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECTOR_CONNECTOR_CLASS: com.datamountaineer.streamreactor.connect.cassandra.CassandraSinkConnector
+      CONNECTOR_CONNECTOR_CLASS: com.datamountaineer.streamreactor.connect.cassandra.sink.CassandraSinkConnector
       CONNECTOR_TASKS_MAX: 1
       CONNECT_LOG4J_LOGGERS: 'org.apache.zookeeper=ERROR,org.I0Itec.zkclient=ERROR,org.reflections=ERROR'
       CONNECT_REST_HOST_NAME: 0.0.0.0
@@ -88,13 +95,14 @@ services:
       CONNECTOR_CONNECT_CASSANDRA_SINK_KCQL: 'INSERT INTO notifications SELECT * FROM notifications'
       CONNECTOR_TOPICS: topic_consumer_logs
       CONNECTOR_CONNECT_CASSANDRA_CLUSTER_NAME: cassandra
+    ports:
+    - '8083:8083'
     depends_on:
     - kafka
     - cassandra
-    ports:
-    - '8083:8083'
     networks:
     - app
+
   cassandra:
     image: 'cassandra:3'
     hostname: cassandra
@@ -105,6 +113,7 @@ services:
     - '9042:9042'
     networks:
     - app
+
 networks:
   app:
     driver: bridge
